@@ -32,7 +32,7 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if editor()
         && menuId.matches('^[a-z0-9-]{1,80}$')
-        && request.resource.data.keys().hasAll(['id', 'name', 'price', 'image', 'available', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['id','name','price','image','available','updatedAt','category','alt','description','detail','tags','temperature','milk','sweetness'])
         && request.resource.data.keys().hasOnly(['id','name','price','image','available','updatedAt','category','alt','description','detail','tags','label','temperature','milk','sweetness'])
         && request.resource.data.id == menuId
         && request.resource.data.name is string
@@ -41,6 +41,20 @@ service cloud.firestore {
         && request.resource.data.price is int
         && request.resource.data.price >= 0
         && request.resource.data.price <= 10000000
+        && request.resource.data.category in ['signature','coffee','non-coffee','bites']
+        && request.resource.data.alt is string
+        && request.resource.data.alt.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.detail is string
+        && request.resource.data.detail.size() <= 3000
+        && request.resource.data.tags is list
+        && request.resource.data.tags.size() <= 8
+        && request.resource.data.temperature is list
+        && request.resource.data.temperature.hasOnly(['Hot','Iced'])
+        && request.resource.data.milk is bool
+        && request.resource.data.sweetness is bool
+        && (!('label' in request.resource.data) || (request.resource.data.label is string && request.resource.data.label.size() <= 80))
         && request.resource.data.available is bool
         && request.resource.data.image is string
         && request.resource.data.image.size() <= 700000

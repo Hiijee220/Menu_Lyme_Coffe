@@ -1,6 +1,7 @@
 (async () => {
   'use strict';
   let menu = window.LYME_MENU;
+  let firebaseLive=false;
   try { const response = await fetch('menu.json?v='+Date.now(), {cache:'no-store'}); if(response.ok) { const data=await response.json(); if(Array.isArray(data)&&data.length) menu=data; } } catch {}
   const byId = new Map(menu.map(item => [item.id, item]));
   const $ = (selector, parent = document) => parent.querySelector(selector);
@@ -219,7 +220,12 @@
     toast(await copyText(share.url)?'Link menu berhasil disalin.':'Link menu belum bisa disalin. Salin alamat dari browser kamu.');
   });
   renderMenu();
+  const baseMenu=structuredClone(menu);
+  import('./firebase-client.js').then(({subscribeMenu})=>subscribeMenu(records=>{
+    if(!records.length)return;firebaseLive=true;const saved=new Map(records.map(m=>[m.id,m]));menu=baseMenu.map(m=>saved.has(m.id)?{...m,...saved.get(m.id)}:m);byId.clear();menu.forEach(m=>byId.set(m.id,m));cart=cart.filter(item=>byId.has(item.productId)&&byId.get(item.productId).available!==false);saveCart();if(productDialog.open)productDialog.close();if(cartDialog.open)renderCart();renderMenu();
+  },()=>{})).catch(()=>{});
   setInterval(async()=>{
+    if(firebaseLive)return;
     try {const response=await fetch('menu.json?v='+Date.now(),{cache:'no-store'});if(!response.ok)return;const next=await response.json();if(!Array.isArray(next)||!next.length||JSON.stringify(next)===JSON.stringify(menu))return;menu=next;byId.clear();menu.forEach(item=>byId.set(item.id,item));cart=cart.filter(item=>byId.has(item.productId)&&byId.get(item.productId).available!==false);saveCart();if(productDialog.open)productDialog.close();if(cartDialog.open)renderCart();renderMenu();}catch{}
   },60000);
 })();

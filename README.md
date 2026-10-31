@@ -10,9 +10,7 @@ Di Settings → Pages, pilih Deploy from a branch, branch main, folder / (root),
 
 Menu dan harga saat ini merupakan contoh. Favorit dan daftar pilihan tersimpan di browser masing-masing. Tidak ada pesanan atau pembayaran yang dikirim.
 
-## Halaman admin
-Buka `admin.html`. Gunakan fine-grained GitHub personal access token yang hanya memilih repository ini, dengan Contents: Read and write. Token hanya ada di memori halaman dan tidak disimpan di localStorage, sessionStorage, atau repository. Keluar atau tutup tab untuk mengakhiri sesi.
+## Email admin migration (feature branch)
+Firebase project: menu-lyme-coffe. Admin uses Google sign-in with verified email. Primary admin remajasilo.rs@gmail.com can grant/revoke other admin emails. Firestore rules enforce access to lymeMenus and lymeAdmins. Photos and menu updates are saved in Firebase; source stays in GitHub.
 
-Admin menyimpan nama, harga, deskripsi, foto dan status tersedia/habis ke `menu.json` melalui commit atomik. Foto diperkecil di browser lalu disimpan ke `assets/uploads/`. Perubahan memicu publikasi GitHub Pages; beri waktu beberapa menit. Halaman publik memeriksa data baru setiap 60 detik setelah versi GitHub Pages selesai terbit. Draf dilindungi dari penimpaan perubahan sesi lain; penyimpanan ditolak jika data atau branch berubah.
-
-Data utama: `menu.json`; `menu-data.js` adalah cadangan saat pemuatan data gagal.
+Backend setup and security verification must be completed before merging this feature branch. See firebase/IMPLEMENTATION.md.

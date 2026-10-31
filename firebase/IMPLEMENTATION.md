@@ -1,17 +1,11 @@
-# Email admin migration — preparation
+# Lyme Coffee email admin
 
-Status: staged preparation only. Firebase is not connected yet. Existing production admin is unchanged.
+Project: menu-lyme-coffe. Owner: remajasilo.rs@gmail.com.
 
-Owner: remajasilo.rs@gmail.com (verified email required).
+Prepared: Firebase Google authentication, verified-email access, owner-only admin access management, atomic menu transactions with stale-edit protection, photo compression and public menu synchronization. Source is staged on feature/email-admin until backend setup and verification are complete.
 
-Planned access:
-- Owner logs in with Google/Firebase Authentication. Never accept a typed email as proof of identity.
-- Owner can add, disable, or remove other admin email addresses in lymeAdmins.
-- Other verified admins can edit menus and availability, but cannot grant admin access.
-- Backend Firestore rules enforce these permissions even when browser checks are bypassed.
-- The owner cannot lose access through the admin-email list.
-- lymeMenus holds one product per document. Public menu reads this collection; fallback remains menu.json during migration.
-- Product photos will be compressed with a strict size cap before storage. Existing asset paths remain valid.
-- No GitHub write token is sent to a visitor or embedded in the app.
+Pending: confirm permanent Firestore location with owner, create Standard Firestore in production mode, deploy and test firebase/firestore.rules. Authentication Google provider was enabled and hiijee220.github.io was added to authorized domains; recheck both before final end-to-end test.
 
-Pending connection: create/select a dedicated Firebase project; enable Google sign-in, register a web app, authorize hiijee220.github.io; create Firestore and test/publish firestore.rules; connect frontend, migrate menu data, test authorized and denied operations, then replace the token login. Do not publish a nonfunctional email form or deploy untested rules.
+Security: Only verified owner email can grant/revoke editor access. Other verified allowed emails can modify menu data. Public users can read lymeMenus only. GitHub tokens are not used by the new admin. Each photo is compressed and capped below 650,000 characters; one document per menu stays below Firestore document size limits.
+
+Runtime menu changes are stored in Firebase; application source and fallback menu remain in GitHub. No existing invitation project is modified.
