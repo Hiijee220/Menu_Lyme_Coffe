@@ -1,0 +1,247 @@
+[
+  {
+    "id": "brown-sugar",
+    "name": "Brown Sugar Latte",
+    "category": "signature",
+    "price": 28000,
+    "image": "assets/iced-latte.jpg",
+    "alt": "Es kopi susu dalam gelas dengan latte berlapis",
+    "description": "Espresso, susu segar, dan manis hangat gula aren. Akrab di tegukan pertama.",
+    "tags": [
+      "Creamy",
+      "Gula aren"
+    ],
+    "label": "LYME SIGNATURE",
+    "temperature": [
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Espresso yang bold bertemu susu lembut dan gula aren. Teman yang pas untuk memulai hari atau mengambil jeda di sore hari.",
+    "available": true
+  },
+  {
+    "id": "lyme-matcha",
+    "name": "Matcha Cloud",
+    "category": "signature",
+    "price": 32000,
+    "image": "assets/matcha.jpg",
+    "alt": "Matcha latte hijau dengan susu",
+    "description": "Matcha lembut dengan susu dan sentuhan vanilla. Hijau yang bikin tenang.",
+    "tags": [
+      "Earthy",
+      "Creamy"
+    ],
+    "label": "MUST TRY",
+    "temperature": [
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Perpaduan matcha dengan susu yang creamy dan sentuhan vanilla. Rasanya earthy, lembut, dan tidak terburu-buru.",
+    "available": true
+  },
+  {
+    "id": "citrus-coffee",
+    "name": "Citrus Cold Brew",
+    "category": "signature",
+    "price": 30000,
+    "image": "assets/citrus.jpg",
+    "alt": "Minuman dingin segar dengan irisan buah citrus",
+    "description": "Cold brew, citrus, dan soda. Segar dengan akhir rasa yang ringan.",
+    "tags": [
+      "Refreshing",
+      "Citrus"
+    ],
+    "label": "SOMETHING DIFFERENT",
+    "temperature": [
+      "Iced"
+    ],
+    "milk": false,
+    "sweetness": true,
+    "detail": "Kopi cold brew yang smooth dipadukan dengan citrus dan soda. Pilihan segar untuk kamu yang ingin mencoba rasa kopi yang berbeda.",
+    "available": true
+  },
+  {
+    "id": "cafe-latte",
+    "name": "Café Latte",
+    "category": "coffee",
+    "price": 26000,
+    "image": "assets/latte-art.jpg",
+    "alt": "Secangkir café latte dengan latte art",
+    "description": "Espresso dan susu yang seimbang. Simpel, lembut, selalu pas.",
+    "tags": [
+      "Balanced",
+      "Milky"
+    ],
+    "temperature": [
+      "Hot",
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Espresso dengan susu lembut, dibuat untuk rasa yang seimbang. Nikmati hangat untuk jeda yang tenang atau dingin untuk hari yang cerah.",
+    "available": true
+  },
+  {
+    "id": "americano",
+    "name": "Americano",
+    "category": "coffee",
+    "price": 22000,
+    "image": "assets/espresso.jpg",
+    "alt": "Kopi hitam dalam cangkir di atas meja",
+    "description": "Espresso dan air. Karakter kopi yang jujur, tanpa banyak basa-basi.",
+    "tags": [
+      "Bold",
+      "Black coffee"
+    ],
+    "temperature": [
+      "Hot",
+      "Iced"
+    ],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Espresso dan air, sesederhana itu. Karakter kopi yang bersih dan bold, cocok dinikmati perlahan.",
+    "available": true
+  },
+  {
+    "id": "cappuccino",
+    "name": "Cappuccino",
+    "category": "coffee",
+    "price": 26000,
+    "image": "assets/latte-art.jpg",
+    "alt": "Cappuccino dengan busa susu dan latte art",
+    "description": "Espresso dengan busa susu tebal. Hangat, fluffy, dan comforting.",
+    "tags": [
+      "Foamy",
+      "Classic"
+    ],
+    "temperature": [
+      "Hot"
+    ],
+    "milk": true,
+    "sweetness": false,
+    "detail": "Espresso dengan susu hangat dan lapisan foam yang tebal. Klasik yang selalu punya tempat di hati.",
+    "available": true
+  },
+  {
+    "id": "vanilla-latte",
+    "name": "Vanilla Latte",
+    "category": "coffee",
+    "price": 28000,
+    "image": "assets/iced-latte.jpg",
+    "alt": "Vanilla latte dingin dalam gelas",
+    "description": "Latte creamy dengan aroma vanilla yang lembut dan manis pas.",
+    "tags": [
+      "Vanilla",
+      "Smooth"
+    ],
+    "temperature": [
+      "Hot",
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Latte dengan sentuhan vanilla yang wangi. Creamy dan lembut, enak untuk menemani obrolan panjang.",
+    "available": true
+  },
+  {
+    "id": "pure-matcha",
+    "name": "Matcha Latte",
+    "category": "non-coffee",
+    "price": 28000,
+    "image": "assets/matcha.jpg",
+    "alt": "Matcha latte dengan warna hijau alami",
+    "description": "Matcha yang earthy bertemu susu lembut. Tanpa espresso, tetap istimewa.",
+    "tags": [
+      "Earthy",
+      "Tanpa espresso"
+    ],
+    "temperature": [
+      "Hot",
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Matcha dan susu, tanpa tambahan espresso. Rasa earthy yang khas dengan akhir rasa yang creamy. Matcha mengandung kafein.",
+    "available": true
+  },
+  {
+    "id": "chocolate",
+    "name": "Chocolate",
+    "category": "non-coffee",
+    "price": 26000,
+    "image": "assets/chocolate.jpg",
+    "alt": "Minuman cokelat susu dalam gelas",
+    "description": "Cokelat pekat dan susu segar. Pelukan manis dalam satu gelas.",
+    "tags": [
+      "Chocolatey",
+      "Comforting"
+    ],
+    "temperature": [
+      "Hot",
+      "Iced"
+    ],
+    "milk": true,
+    "sweetness": true,
+    "detail": "Cokelat pekat dengan susu yang lembut. Nikmati hangat saat ingin bersantai, atau dingin untuk penyegar suasana.",
+    "available": true
+  },
+  {
+    "id": "citrus-fizz",
+    "name": "Citrus Fizz",
+    "category": "non-coffee",
+    "price": 24000,
+    "image": "assets/citrus.jpg",
+    "alt": "Minuman citrus segar dingin dengan buah",
+    "description": "Citrus, soda, dan es. Cerah, ringan, dan segar sampai akhir.",
+    "tags": [
+      "Sparkling",
+      "Fruity"
+    ],
+    "temperature": [
+      "Iced"
+    ],
+    "milk": false,
+    "sweetness": true,
+    "detail": "Soda dengan citrus yang segar, disajikan dingin. Ringan dan bubbly, jadi teman yang ceria untuk jedamu.",
+    "available": true
+  },
+  {
+    "id": "butter-croissant",
+    "name": "Butter Croissant",
+    "category": "bites",
+    "price": 22000,
+    "image": "assets/croissant.jpg",
+    "alt": "Croissant berlapis dengan warna keemasan",
+    "description": "Lapisan renyah, aroma butter, dan bagian dalam yang lembut.",
+    "tags": [
+      "Buttery",
+      "Flaky"
+    ],
+    "label": "COFFEE’S BEST FRIEND",
+    "temperature": [],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Croissant berlapis yang renyah di luar dan lembut di dalam. Teman sederhana yang cocok dengan secangkir latte. Mengandung gandum, susu, dan telur.",
+    "available": true
+  },
+  {
+    "id": "almond-croissant",
+    "name": "Almond Croissant",
+    "category": "bites",
+    "price": 28000,
+    "image": "assets/croissant.jpg",
+    "alt": "Ilustrasi croissant pastry berlapis",
+    "description": "Croissant dengan rasa almond yang nutty dan manis lembut.",
+    "tags": [
+      "Nutty",
+      "Sweet bite"
+    ],
+    "temperature": [],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Croissant dengan isian almond yang lembut. Pilihan manis untuk menemani kopi favoritmu. Mengandung gandum, susu, telur, dan kacang almond.",
+    "available": true
+  }
+]
