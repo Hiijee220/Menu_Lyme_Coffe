@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function verified() {
+      return request.auth != null
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+    function email() { return request.auth.token.email.lower(); }
+    function owner() {
+      return verified() && email() == 'remajasilo.rs@gmail.com';
+    }
+    function editor() {
+      return owner() || (verified()
+        && exists(/databases/$(database)/documents/lymeAdmins/$(email()))
+        && get(/databases/$(database)/documents/lymeAdmins/$(email())).data.enabled == true);
+    }
+    match /lymeAdmins/{adminEmail} {
+      allow get: if owner() || (verified() && email() == adminEmail);
+      allow list: if owner();
+      allow create, update: if owner()
+        && adminEmail != 'remajasilo.rs@gmail.com'
+        && adminEmail == adminEmail.lower()
+        && adminEmail.size() <= 254
+        && request.resource.data.keys().hasOnly(['email', 'enabled', 'updatedAt'])
+        && request.resource.data.email == adminEmail
+        && request.resource.data.enabled is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if owner() && adminEmail != 'remajasilo.rs@gmail.com';
+    }
+    match /lymeMenus/{menuId} {
+      allow read: if true;
+      allow create, update: if editor()
+        && menuId.matches('^[a-z0-9-]{1,80}$')
+        && request.resource.data.keys().hasAll(['id', 'name', 'price', 'image', 'available', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['id','name','price','image','available','updatedAt','category','alt','description','detail','tags','label','temperature','milk','sweetness'])
+        && request.resource.data.id == menuId
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.price is int
+        && request.resource.data.price >= 0
+        && request.resource.data.price <= 10000000
+        && request.resource.data.available is bool
+        && request.resource.data.image is string
+        && request.resource.data.image.size() <= 700000
+        && (request.resource.data.image.matches('^assets/.*')
+          || request.resource.data.image.matches('^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$'))
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if owner();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
