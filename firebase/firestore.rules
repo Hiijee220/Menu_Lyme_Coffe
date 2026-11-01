@@ -3,8 +3,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function verified() {
       return request.auth != null
-        && request.auth.token.email is string
-        && request.auth.token.email_verified == true;
+        && request.auth.token.get('email', '') is string
+        && request.auth.token.get('email_verified', false) == true;
     }
     function email() { return request.auth.token.email.lower(); }
     function owner() {
@@ -62,6 +62,103 @@ service cloud.firestore {
           || request.resource.data.image.matches('^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$'))
         && request.resource.data.updatedAt == request.time;
       allow delete: if owner();
+    }
+
+    // Public merchant payment instructions. Only existing verified admins may edit.
+    match /lymeCommerce/settings {
+      allow read: if true;
+      allow create, update: if editor()
+        && request.resource.data.keys().hasOnly(['acceptingOrders','qrEnabled','qrImage','qrLabel','transferEnabled','bankName','accountNumber','accountName','cashEnabled','updatedAt'])
+        && request.resource.data.acceptingOrders is bool
+        && request.resource.data.qrEnabled is bool
+        && request.resource.data.transferEnabled is bool
+        && request.resource.data.cashEnabled is bool
+        && request.resource.data.qrImage is string && request.resource.data.qrImage.size() <= 450000
+        && (request.resource.data.qrImage == '' || request.resource.data.qrImage.matches('^data:image/png;base64,[A-Za-z0-9+/=]+$'))
+        && request.resource.data.qrLabel is string && request.resource.data.qrLabel.size() <= 120
+        && request.resource.data.bankName is string && request.resource.data.bankName.size() <= 60
+        && request.resource.data.accountNumber is string && request.resource.data.accountNumber.size() <= 40
+        && request.resource.data.accountName is string && request.resource.data.accountName.size() <= 100
+        && (!request.resource.data.qrEnabled || (request.resource.data.qrImage.size() > 0 && request.resource.data.qrLabel.size() > 0))
+        && (!request.resource.data.transferEnabled || (request.resource.data.bankName.size() > 0 && request.resource.data.accountNumber.size() > 0 && request.resource.data.accountName.size() > 0))
+        && (!request.resource.data.acceptingOrders || request.resource.data.cashEnabled || request.resource.data.qrEnabled || request.resource.data.transferEnabled)
+        && request.resource.data.updatedAt == request.time;
+    }
+    function commerce() { return get(/databases/$(database)/documents/lymeCommerce/settings).data; }
+    function validLine(i) {
+      let product = get(/databases/$(database)/documents/lymeMenus/$(i.productId)).data;
+      let qty = i.quantity;
+      let price = product.price + (i.milk == 'Oat milk' ? 6000 : 0);
+      return product.available == true && qty is int && qty >= 1 && qty <= 20
+        && i == {'productId':product.id,'name':product.name,'quantity':qty,'unitPrice':price,'lineTotal':price*qty,'temperature':i.temperature,'sweetness':i.sweetness,'milk':i.milk,'note':i.note}
+        && i.temperature in (product.temperature.size() == 0 ? [''] : product.temperature)
+        && i.sweetness in (product.sweetness ? ['Normal','Lebih sedikit','Tanpa gula'] : [''])
+        && i.milk in (product.milk ? ['Susu biasa','Oat milk'] : [''])
+        && i.note is string && i.note.size() <= 180;
+    }
+    function checkedLine(items, index, orderId, uid) { return items.size() <= index || getAfter(/databases/$(database)/documents/lymeOrders/$(orderId)/items/$(string(index))).data == {'ownerUid':uid,'item':items[index],'createdAt':request.time}; }
+    function amount(items, index) { return items.size() > index ? items[index].lineTotal : 0; }
+    function validPayment(o) {
+      let c = commerce();
+      return c.acceptingOrders == true
+        && ((o.paymentMethod == 'cash' && c.cashEnabled && o.paymentLabel == 'Bayar di kasir' && o.qrImage == '')
+          || (o.paymentMethod == 'qr' && c.qrEnabled && o.paymentLabel == c.qrLabel && o.qrImage == c.qrImage)
+          || (o.paymentMethod == 'transfer' && c.transferEnabled && o.qrImage == ''
+            && o.paymentLabel == c.bankName + ' · ' + c.accountNumber + ' · a.n. ' + c.accountName));
+    }
+    function validNewOrder(o, orderId) {
+      return request.auth != null && o.ownerUid == request.auth.uid
+        && orderId.matches('^LYME-[a-f0-9]{16}$') && o.id == orderId
+        && o.keys().hasOnly(['id','ownerUid','customerName','service','table','note','items','total','paymentMethod','paymentLabel','qrImage','status','paymentStatus','paymentClaimed','paymentReference','adminNote','createdAt','updatedAt'])
+        && o.customerName is string && o.customerName.size() > 0 && o.customerName.size() <= 80
+        && o['service'] in ['dine-in','takeaway'] && o.table is string && o.table.size() <= 20
+        && ((o['service'] == 'dine-in' && o.table.size() > 0) || (o['service'] == 'takeaway' && o.table == ''))
+        && o.note is string && o.note.size() <= 500
+        && o.items is list && o.items.size() > 0 && o.items.size() <= 8
+        && checkedLine(o.items,0,orderId,o.ownerUid) && checkedLine(o.items,1,orderId,o.ownerUid) && checkedLine(o.items,2,orderId,o.ownerUid) && checkedLine(o.items,3,orderId,o.ownerUid)
+        && checkedLine(o.items,4,orderId,o.ownerUid) && checkedLine(o.items,5,orderId,o.ownerUid) && checkedLine(o.items,6,orderId,o.ownerUid) && checkedLine(o.items,7,orderId,o.ownerUid)
+        && o.total is int && o.total >= 0
+        && o.total == amount(o.items,0)+amount(o.items,1)+amount(o.items,2)+amount(o.items,3)+amount(o.items,4)+amount(o.items,5)+amount(o.items,6)+amount(o.items,7)
+        && validPayment(o)
+        && o.status == 'pending' && o.paymentStatus == 'unpaid' && o.paymentClaimed == false
+        && o.paymentReference == '' && o.adminNote == ''
+        && o.createdAt == request.time && o.updatedAt == request.time;
+    }
+    function validTransition(old, next) {
+      return old == next || (old == 'pending' && next in ['preparing','cancelled'])
+        || (old == 'preparing' && next in ['ready','cancelled'])
+        || (old == 'ready' && next in ['completed','cancelled']);
+    }
+    match /lymeOrders/{orderId} {
+      allow get: if request.auth != null && (!exists(/databases/$(database)/documents/lymeOrders/$(orderId)) || resource.data.ownerUid == request.auth.uid || editor());
+      allow list: if request.auth != null && (resource.data.ownerUid == request.auth.uid || editor());
+      allow create: if validNewOrder(request.resource.data, orderId);
+      allow update: if request.auth != null && request.resource.data.updatedAt == request.time && (
+        (resource.data.ownerUid == request.auth.uid && resource.data.status != 'cancelled' && resource.data.paymentStatus != 'paid'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentClaimed','paymentReference','updatedAt'])
+          && resource.data.paymentMethod in ['qr','transfer']
+          && request.resource.data.paymentClaimed == true
+          && request.resource.data.paymentReference is string && request.resource.data.paymentReference.size() > 0 && request.resource.data.paymentReference.size() <= 120)
+        || (editor()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','paymentStatus','adminNote','updatedAt'])
+          && validTransition(resource.data.status,request.resource.data.status)
+          && request.resource.data.paymentStatus in ['unpaid','paid','rejected']
+          && (resource.data.paymentStatus != 'paid' || request.resource.data.paymentStatus == 'paid')
+          && (request.resource.data.status != 'completed' || request.resource.data.paymentStatus == 'paid')
+          && request.resource.data.adminNote is string && request.resource.data.adminNote.size() <= 500)
+      );
+      allow delete: if false;
+    }
+    // Each line is price-checked separately within the same atomic write as its order.
+    // Immutable line records keep rule evaluations and document accesses bounded.
+    match /lymeOrders/{orderId}/items/{lineId} {
+      allow create: if request.auth != null && lineId.matches('^[0-7]$')
+        && orderId.matches('^LYME-[a-f0-9]{16}$')
+        && request.resource.data.keys().hasOnly(['ownerUid','item','createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && validLine(request.resource.data.item);
+      allow read, update, delete: if false;
     }
     match /{document=**} { allow read, write: if false; }
   }

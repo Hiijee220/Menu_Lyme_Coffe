@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "cd .. && firebase emulators:exec --only firestore --project demo-lyme-commerce --config firebase.json \"node tests/commerce-rules.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.19.0",
+    "firebase-tools": "14.27.0"
+  }
+}

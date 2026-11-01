@@ -18,3 +18,7 @@ dialog{color:var(--green);border:0;background:var(--paper);padding:0}dialog::bac
 .sold-out-badge{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 16px;background:#173f32ed;color:white;border-radius:99px;white-space:nowrap;font-size:12px;pointer-events:none}.is-sold-out .card-image-button img{filter:grayscale(.8);opacity:.55}.is-sold-out .card-label{display:none}
 
 .card-label.best-seller-label{background:var(--lime);color:var(--green);font-weight:600;max-width:calc(100% - 26px)}.is-sold-out .card-label.best-seller-label{display:block}@media(max-width:650px){.card-label.best-seller-label{font-size:8px;padding:6px 8px;letter-spacing:.2px}}
+
+.cart-transactions-link{display:block;text-align:center;font-size:12px;margin-top:15px}.desktop-nav{gap:22px}
+
+@media(max-width:650px){.mobile-nav:not([hidden]){flex-wrap:wrap;gap:14px 18px}}

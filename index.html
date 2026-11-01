@@ -13,9 +13,9 @@
   <title>Lyme Coffee — A little pause, a good cup.</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/fonts.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20261101-commerce">
   <script src="menu-data.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=20261101-commerce" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#menu">Langsung ke menu</a>
@@ -40,15 +40,15 @@
       <a class="brand" href="#" aria-label="Lyme Coffee, beranda">lyme<span class="brand-dot">.</span><span class="brand-small">COFFEE & COMPANY</span></a>
       <nav class="desktop-nav" aria-label="Navigasi utama">
         <a class="nav-link active" href="#menu">Menu kami</a>
-        <a class="nav-link" href="#cerita">Cerita Lyme</a>
+        <a class="nav-link" href="transaksi.html">Transaksi</a><a class="nav-link" href="#cerita">Cerita Lyme</a>
         <button class="nav-link best-seller-link" type="button" data-action="best-sellers"><svg class="icon"><use href="#i-spark"/></svg> Best Seller<span class="best-seller-count" hidden>0</span></button>
       </nav>
       <div class="header-actions">
-        <button class="bag-button" type="button" data-action="cart" aria-label="Buka pilihan saya"><svg class="icon"><use href="#i-bag"/></svg><span class="bag-label">Pilihan saya</span><span class="cart-count">0</span></button>
+        <button class="bag-button" type="button" data-action="cart" aria-label="Buka keranjang"><svg class="icon"><use href="#i-bag"/></svg><span class="bag-label">Keranjang</span><span class="cart-count">0</span></button>
         <button class="mobile-menu icon-button" type="button" id="mobile-toggle" aria-label="Buka navigasi" aria-expanded="false" aria-controls="mobile-nav"><svg class="icon"><use href="#i-menu"/></svg></button>
       </div>
     </div>
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Navigasi ponsel" hidden><a href="#menu">Menu kami</a><a href="#cerita">Cerita Lyme</a><button type="button" data-action="best-sellers">Menu Best Seller</button></nav>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Navigasi ponsel" hidden><a href="#menu">Menu kami</a><a href="transaksi.html">Transaksi</a><a href="#cerita">Cerita Lyme</a><button type="button" data-action="best-sellers">Menu Best Seller</button></nav>
   </header>
 
   <main>
@@ -86,7 +86,7 @@
         </div>
         <label class="sort-control"><span class="sr-only">Urutkan menu</span><select id="menu-sort"><option value="recommended">Pilihan Lyme</option><option value="price-asc">Harga terendah</option><option value="price-desc">Harga tertinggi</option><option value="name">Nama A–Z</option></select><svg class="icon"><use href="#i-chevron"/></svg></label>
       </div>
-      <div class="results-line"><p id="results-count" role="status">12 menu untuk jedamu</p><span>MENU CONTOH · HARGA DALAM RUPIAH</span></div>
+      <div class="results-line"><p id="results-count" role="status">12 menu untuk jedamu</p><span>PESAN LANGSUNG · HARGA DALAM RUPIAH</span></div>
       <div class="menu-grid" id="menu-grid"></div>
       <div class="empty-state" id="empty-state" hidden><span class="empty-icon"><svg class="icon"><use href="#i-search"/></svg></span><h3>Belum ketemu yang pas?</h3><p>Coba kata lain, atau jelajahi semua menu kami.</p><button class="button button-dark" type="button" id="reset-filters">Lihat semua menu <svg class="icon"><use href="#i-arrow"/></svg></button></div>
       <p class="menu-note"><svg class="icon"><use href="#i-cup"/></svg> Bikin sesuai seleramu. Pilih suhu, tingkat manis, dan susu di detail minuman.</p>
@@ -97,13 +97,13 @@
       <div class="story-copy"><p class="eyebrow">A MOMENT WITH LYME</p><h2 id="story-title">Sedikit jeda.<br><em>Banyak cerita.</em></h2><p>Kami percaya, hal baik sering dimulai dari hal sederhana. Secangkir kopi, obrolan tanpa buru-buru, atau waktu sebentar untuk diri sendiri.</p><p>Di Lyme, selalu ada rasa untuk menemani ceritamu.</p><a class="story-link" href="#menu">Pilih teman jedamu <svg class="icon"><use href="#i-arrow-up"/></svg></a><div class="story-signature">see you over coffee.</div></div>
     </section>
 
-    <section class="closing-section wrap"><div class="closing-mark" aria-hidden="true"><svg class="icon"><use href="#i-spark"/></svg></div><div><p class="eyebrow">YOUR NEXT GOOD CUP STARTS HERE</p><h2>Jeda yang enak,<br><em>tinggal pilih.</em></h2></div><button class="button button-dark" type="button" data-action="cart">Lihat pilihan saya <span class="button-icon"><svg class="icon"><use href="#i-bag"/></svg></span></button></section>
+    <section class="closing-section wrap"><div class="closing-mark" aria-hidden="true"><svg class="icon"><use href="#i-spark"/></svg></div><div><p class="eyebrow">YOUR NEXT GOOD CUP STARTS HERE</p><h2>Jeda yang enak,<br><em>tinggal pilih.</em></h2></div><button class="button button-dark" type="button" data-action="cart">Lihat keranjang <span class="button-icon"><svg class="icon"><use href="#i-bag"/></svg></span></button></section>
   </main>
 
-  <footer class="site-footer"><div class="footer-main wrap"><div><a class="footer-brand" href="#" aria-label="Lyme Coffee, kembali ke atas">lyme.</a><p>A little pause, a good cup.</p></div><div class="footer-links"><a href="#menu">Menu kami <svg class="icon"><use href="#i-arrow-up"/></svg></a><a href="#cerita">Cerita Lyme <svg class="icon"><use href="#i-arrow-up"/></svg></a><button type="button" id="share-menu">Bagikan menu <svg class="icon"><use href="#i-arrow-up"/></svg></button></div><div class="footer-motto">Good things<br>are <em>brewing.</em><span>✳</span></div></div><div class="footer-bottom wrap"><span>© 2026 Lyme Coffee</span><span>Konsep menu digital · Foto, menu, dan harga merupakan ilustrasi.</span><a href="#">Kembali ke atas ↑</a></div></footer>
+  <footer class="site-footer"><div class="footer-main wrap"><div><a class="footer-brand" href="#" aria-label="Lyme Coffee, kembali ke atas">lyme.</a><p>A little pause, a good cup.</p></div><div class="footer-links"><a href="#menu">Menu kami <svg class="icon"><use href="#i-arrow-up"/></svg></a><a href="#cerita">Cerita Lyme <svg class="icon"><use href="#i-arrow-up"/></svg></a><button type="button" id="share-menu">Bagikan menu <svg class="icon"><use href="#i-arrow-up"/></svg></button></div><div class="footer-motto">Good things<br>are <em>brewing.</em><span>✳</span></div></div><div class="footer-bottom wrap"><span>© 2026 Lyme Coffee</span><span>Menu & pemesanan online · Lyme Coffee</span><a href="#">Kembali ke atas ↑</a></div></footer>
 
   <dialog class="product-dialog" id="product-dialog" aria-labelledby="product-dialog-title"><button class="dialog-close icon-button" type="button" data-close-dialog aria-label="Tutup detail menu"><svg class="icon"><use href="#i-close"/></svg></button><div id="product-dialog-content"></div></dialog>
-  <dialog class="cart-dialog" id="cart-dialog" aria-labelledby="cart-dialog-title"><div class="drawer-heading"><div><p class="eyebrow">A LITTLE SOMETHING FOR YOU</p><h2 id="cart-dialog-title">Pilihan <em>kamu.</em></h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Tutup pilihan"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="cart-items" class="cart-items"></div><div class="cart-summary" id="cart-summary"></div></dialog>
+  <dialog class="cart-dialog" id="cart-dialog" aria-labelledby="cart-dialog-title"><div class="drawer-heading"><div><p class="eyebrow">A LITTLE SOMETHING FOR YOU</p><h2 id="cart-dialog-title">Keranjang <em>kamu.</em></h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Tutup pilihan"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="cart-items" class="cart-items"></div><div class="cart-summary" id="cart-summary"></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden><svg class="icon"><use href="#i-check"/></svg><span></span></div>
 </body>
 </html>

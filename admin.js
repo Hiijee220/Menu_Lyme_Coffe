@@ -1,4 +1,4 @@
-import {auth,db,OWNER_EMAIL,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut,setPersistence,browserSessionPersistence,collection,doc,getDocs,onSnapshot,runTransaction,serverTimestamp,setDoc,deleteDoc} from './firebase-client.js';
+import {auth,db,OWNER_EMAIL,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut,setPersistence,browserSessionPersistence,collection,doc,getDocs,onSnapshot,runTransaction,serverTimestamp,setDoc,deleteDoc} from './firebase-client.js?v=20261101-commerce';
 (() => {
 'use strict';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
