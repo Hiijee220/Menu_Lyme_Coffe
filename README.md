@@ -1,16 +1,20 @@
 # Lyme Coffee
 
-Website menu digital Lyme Coffee. Semua kode, gambar, dan font disimpan dalam repository ini.
+Website menu digital Lyme Coffee. Kode, font, dan foto bawaan disimpan di repository ini.
 
-## Mengubah menu
-Edit `menu-data.js` untuk nama, harga (rupiah), deskripsi, kategori, dan foto menu. Edit `index.html` untuk nama toko dan cerita; `styles.css` untuk desain; `app.js` untuk interaksi. Semua foto dan font berada di `assets/`.
+## Website dan admin
 
-## GitHub Pages
-Di Settings → Pages, pilih Deploy from a branch, branch main, folder / (root), lalu Save. Perubahan pada main akan diterbitkan otomatis oleh GitHub Pages. Tidak memerlukan build atau instalasi paket.
+Website: https://hiijee220.github.io/Menu_Lyme_Coffe/
+Admin: https://hiijee220.github.io/Menu_Lyme_Coffe/admin.html
 
-Menu dan harga saat ini merupakan contoh. Favorit dan daftar pilihan tersimpan di browser masing-masing. Tidak ada pesanan atau pembayaran yang dikirim.
+Masuk dengan Google menggunakan email yang diizinkan. Admin utama remajasilo.rs@gmail.com dapat menambah, menonaktifkan, atau menghapus akses email admin lain melalui Kelola akses admin. Admin tambahan dapat mengedit menu, harga, foto dan ketersediaan, tetapi tidak dapat mengelola akses admin.
 
-## Email admin migration (feature branch)
-Firebase project: menu-lyme-coffe. Admin uses Google sign-in with verified email. Primary admin remajasilo.rs@gmail.com can grant/revoke other admin emails. Firestore rules enforce access to lymeMenus and lymeAdmins. Photos and menu updates are saved in Firebase; source stays in GitHub.
+## Penyimpanan dan pembaruan
 
-Backend setup and security verification must be completed before merging this feature branch. See firebase/IMPLEMENTATION.md.
+Data menu dan foto yang diunggah melalui admin disimpan di Firebase project menu-lyme-coffe (Firestore Jakarta / asia-southeast2). Pembaruan menu disinkronkan ke halaman pengunjung melalui listener Firebase. Source website tetap di GitHub; commit di main memicu GitHub Pages. Tidak memerlukan build.
+
+menu.json adalah menu cadangan ketika Firebase tidak tersedia; menu-data.js adalah cadangan tambahan. Ubah menu aktif melalui halaman admin. Edit index.html untuk cerita toko, styles.css untuk tampilan, dan app.js untuk interaksi. Foto bawaan dan font ada di assets/.
+
+Aturan akses berada di firebase/firestore.rules. Konfigurasi web Firebase bersifat publik; keamanan ditegakkan oleh Authentication dan Firestore Rules, bukan dengan menyembunyikan file admin. Token GitHub tidak diperlukan untuk login admin.
+
+Favorit dan daftar pilihan disimpan di browser masing-masing. Tidak ada pesanan atau pembayaran yang dikirim. Lihat firebase/IMPLEMENTATION.md untuk catatan validasi.
