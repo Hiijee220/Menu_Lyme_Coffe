@@ -12,8 +12,7 @@
   const compactPrice = value => (value / 1000).toString().replace('.', ',') + 'k';
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
   const persist = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* Usable without local storage. */ } };
-  const rawFavorites = read('lyme-favorites-v1', []);
-  const favorites = new Set(Array.isArray(rawFavorites) ? rawFavorites.filter(id => byId.has(id)) : []);
+  const isBestSeller = item => (item.tags || []).includes('Best Seller');
   const rawCart = read('lyme-selection-v1', []);
   let cart = Array.isArray(rawCart) ? rawCart.filter(item => item && byId.has(item.productId) && byId.get(item.productId).available!==false && typeof item.key === 'string').slice(0,80).map(item => {
     const product = byId.get(item.productId);
@@ -51,35 +50,36 @@
     const quantity = cart.reduce((total, item) => total + item.quantity, 0);
     $$('.cart-count').forEach(node => { node.textContent = quantity; });
     $('.bag-button').setAttribute('aria-label', `Buka pilihan saya, ${quantity} item`);
-    const favCount = $('.fav-count');
-    favCount.textContent = favorites.size;
-    favCount.hidden = favorites.size === 0;
+    const count = menu.filter(isBestSeller).length;
+    const badge = $('.best-seller-count');
+    badge.textContent = count;
+    badge.hidden = count === 0;
   }
   function renderMenu() {
-    document.querySelectorAll('.category-tab[data-category]').forEach(tab=>{const count=tab.querySelector('span');if(count)count.textContent=tab.dataset.category==='all'?menu.length:menu.filter(m=>m.category===tab.dataset.category).length;});
+    document.querySelectorAll('.category-tab[data-category]').forEach(tab=>{const count=tab.querySelector('span');if(count)count.textContent=tab.dataset.category==='all'?menu.length:tab.dataset.category==='best-sellers'?menu.filter(isBestSeller).length:menu.filter(m=>m.category===tab.dataset.category).length;});
     const signature=byId.get('brown-sugar');if(signature){$('.hero-feature strong').textContent=signature.name;$('.hero-feature').disabled=signature.available===false;}
-    let items = menu.filter(item => (category === 'all' || (category === 'favorites' ? favorites.has(item.id) : item.category === category)) && `${escape(item.name)} ${escape(item.description)} ${item.tags.join(' ')}`.toLocaleLowerCase('id').includes(query));
+    let items = menu.filter(item => (category === 'all' || (category === 'best-sellers' ? isBestSeller(item) : item.category === category)) && `${escape(item.name)} ${escape(item.description)} ${item.tags.join(' ')}`.toLocaleLowerCase('id').includes(query));
+    if (sort === 'recommended') items.sort((a,b) => Number(isBestSeller(b))-Number(isBestSeller(a)));
     if (sort === 'price-asc') items.sort((a,b) => a.price-b.price);
     if (sort === 'price-desc') items.sort((a,b) => b.price-a.price);
     if (sort === 'name') items.sort((a,b) => a.name.localeCompare(b.name,'id'));
     $('#menu-grid').innerHTML = items.map((item,index) => `<article class="menu-card ${item.available===false?'is-sold-out':''}">
       <div class="card-image-wrap">${item.available===false?'<span class="sold-out-badge">Habis sementara</span>':''}
         <button class="card-image-button" type="button" data-product="${item.id}" aria-label="Lihat detail ${escape(item.name)}"><img src="${item.image}" alt="${escape(item.alt)}" loading="lazy" width="550" height="500" ${index>3?'decoding="async"':''}></button>
-        ${item.label?`<span class="card-label ${item.category==='signature'?'signature-label':''}">${escape(item.label)}</span>`:''}
-        <button class="favorite-button ${favorites.has(item.id)?'is-saved':''}" type="button" data-favorite="${item.id}" aria-pressed="${favorites.has(item.id)}" aria-label="${favorites.has(item.id)?'Hapus':'Simpan'} ${escape(item.name)} ${favorites.has(item.id)?'dari':'ke'} favorit">${icon('heart')}</button>
+        ${isBestSeller(item)?'<span class="card-label best-seller-label">★ Best Seller</span>':item.label?`<span class="card-label ${item.category==='signature'?'signature-label':''}">${escape(item.label)}</span>`:''}
         <button class="quick-add" ${item.available===false?'disabled':''} type="button" data-product="${item.id}" aria-label="Pilih ${escape(item.name)}">${icon('plus')}</button>
       </div>
-      <div class="card-copy"><div class="card-title-line"><h3><button type="button" data-product="${item.id}">${escape(item.name)}</button></h3><span class="card-price" aria-label="${rupiah(item.price)}">${compactPrice(item.price)}</span></div><p class="card-description">${escape(item.description)}</p><div class="card-bottom"><div class="card-tags">${item.tags.map(tag=>`<span class="card-tag">${escape(tag)}</span>`).join('')}</div><button class="card-link" type="button" data-product="${item.id}" aria-label="Lihat detail ${escape(item.name)}">${icon('arrow-up')}</button></div></div>
+      <div class="card-copy"><div class="card-title-line"><h3><button type="button" data-product="${item.id}">${escape(item.name)}</button></h3><span class="card-price" aria-label="${rupiah(item.price)}">${compactPrice(item.price)}</span></div><p class="card-description">${escape(item.description)}</p><div class="card-bottom"><div class="card-tags">${item.tags.filter(tag=>tag!=='Best Seller').map(tag=>`<span class="card-tag">${escape(tag)}</span>`).join('')}</div><button class="card-link" type="button" data-product="${item.id}" aria-label="Lihat detail ${escape(item.name)}">${icon('arrow-up')}</button></div></div>
     </article>`).join('');
-    $('#results-count').textContent = `${items.length} ${category==='favorites'?'menu favoritmu':'menu untuk jedamu'}`;
+    $('#results-count').textContent = `${items.length} ${category==='best-sellers'?'menu Best Seller':'menu untuk jedamu'}`;
     $('#menu-grid').hidden = items.length === 0;
     $('#empty-state').hidden = items.length !== 0;
     if (!items.length) {
-      $('h3', $('#empty-state')).textContent = category==='favorites'&&!query?'Favoritmu dimulai di sini.':'Belum ketemu yang pas?';
-      $('p', $('#empty-state')).textContent = category==='favorites'&&!query?'Ketuk ikon hati pada menu yang kamu suka.':'Coba kata lain, atau jelajahi semua menu kami.';
+      $('h3', $('#empty-state')).textContent = category==='best-sellers'&&!query?'Best Seller segera hadir.':'Belum ketemu yang pas?';
+      $('p', $('#empty-state')).textContent = category==='best-sellers'&&!query?'Menu pilihan terlaris akan ditampilkan di sini. Jelajahi menu lainnya dulu, ya.':'Coba kata lain, atau jelajahi semua menu kami.';
     }
     $$('.category-tab').forEach(button => { const active=button.dataset.category===category;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active)); });
-    $('.favorites-link').classList.toggle('active',category==='favorites');
+    $('.best-seller-link').classList.toggle('active',category==='best-sellers');
     updateCounts();
   }
   function setCategory(value, scroll=false) {
@@ -93,30 +93,13 @@
     }
     if (scroll) $('#menu').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   }
-  function toggleFavorite(id, button) {
-    const saved = !favorites.has(id);
-    if (saved) favorites.add(id); else favorites.delete(id);
-    persist('lyme-favorites-v1',[...favorites]);
-    if (category === 'favorites') {
-      const index=$$('[data-favorite]').indexOf(button);
-      renderMenu();
-      const next=$$('[data-favorite]')[Math.min(index,favorites.size-1)];
-      (next||$('#reset-filters')).focus({preventScroll:true});
-    } else {
-      button.classList.toggle('is-saved', saved);
-      button.setAttribute('aria-pressed', String(saved));
-      button.setAttribute('aria-label', `${saved?'Hapus':'Simpan'} ${byId.get(id).name} ${saved?'dari':'ke'} favorit`);
-      updateCounts();
-    }
-    toast(saved?'Disimpan ke favoritmu.':'Dihapus dari favorit.');
-  }
   const options = (legend,name,values,selected) => `<fieldset class="option-group"><legend>${legend}</legend><div class="option-options">${values.map(value=>`<label class="option-pill"><input type="radio" name="${name}" value="${value}" ${value===selected?'checked':''}><span>${value}${value==='Oat milk'?'<small>+6k</small>':''}</span></label>`).join('')}</div></fieldset>`;
   function showProduct(id) {
     const product=byId.get(id);
     if (!product) return;
     if(product.available===false){toast('Menu ini sedang habis. Pilih menu lainnya, ya.');return;}
     const defaultTemperature=product.temperature.includes('Iced')?'Iced':product.temperature[0];
-    $('#product-dialog-content').innerHTML=`<div class="product-detail"><div class="detail-visual"><img src="${product.image}" alt="${escape(product.alt)}" width="550" height="750">${product.label?`<span class="card-label signature-label">${escape(product.label)}</span>`:''}</div><div class="detail-copy"><p class="eyebrow">${product.category==='bites'?'A LITTLE BITE OF HAPPINESS':'A CUP FOR YOUR KIND OF DAY'}</p><h2 id="product-dialog-title">${escape(product.name)}</h2><p class="detail-description">${escape(product.detail)}</p><p class="detail-price">${rupiah(product.price)}</p><form id="product-form">${product.temperature.length?options('Suhu minuman','temperature',product.temperature,defaultTemperature):''}${product.sweetness?options('Tingkat manis','sweetness',['Normal','Lebih sedikit','Tanpa gula'],'Normal'):''}${product.milk?options('Pilihan susu','milk',['Susu biasa','Oat milk'],'Susu biasa'):''}<label class="note-label" for="detail-note">Catatan <span style="font-weight:400;color:var(--muted)">(opsional)</span></label><textarea class="detail-note" id="detail-note" name="note" maxlength="180" placeholder="Misalnya: esnya sedikit, ya."></textarea><div class="detail-actions"><div class="quantity-control"><button type="button" id="detail-minus" aria-label="Kurangi jumlah" disabled>${icon('minus')}</button><output id="detail-quantity" aria-label="Jumlah">1</output><button type="button" id="detail-plus" aria-label="Tambah jumlah">${icon('plus')}</button></div><button class="detail-add" type="submit">Tambah ke pilihan<strong id="detail-total">${rupiah(product.price)}</strong></button></div><p class="allergen-note">Menu dan harga masih berupa contoh.${product.milk?' Beri tahu barista jika kamu memiliki alergi susu.':''}</p></form></div></div>`;
+    $('#product-dialog-content').innerHTML=`<div class="product-detail"><div class="detail-visual"><img src="${product.image}" alt="${escape(product.alt)}" width="550" height="750">${isBestSeller(product)?'<span class="card-label best-seller-label">★ Best Seller</span>':product.label?`<span class="card-label signature-label">${escape(product.label)}</span>`:''}</div><div class="detail-copy"><p class="eyebrow">${product.category==='bites'?'A LITTLE BITE OF HAPPINESS':'A CUP FOR YOUR KIND OF DAY'}</p><h2 id="product-dialog-title">${escape(product.name)}</h2><p class="detail-description">${escape(product.detail)}</p><p class="detail-price">${rupiah(product.price)}</p><form id="product-form">${product.temperature.length?options('Suhu minuman','temperature',product.temperature,defaultTemperature):''}${product.sweetness?options('Tingkat manis','sweetness',['Normal','Lebih sedikit','Tanpa gula'],'Normal'):''}${product.milk?options('Pilihan susu','milk',['Susu biasa','Oat milk'],'Susu biasa'):''}<label class="note-label" for="detail-note">Catatan <span style="font-weight:400;color:var(--muted)">(opsional)</span></label><textarea class="detail-note" id="detail-note" name="note" maxlength="180" placeholder="Misalnya: esnya sedikit, ya."></textarea><div class="detail-actions"><div class="quantity-control"><button type="button" id="detail-minus" aria-label="Kurangi jumlah" disabled>${icon('minus')}</button><output id="detail-quantity" aria-label="Jumlah">1</output><button type="button" id="detail-plus" aria-label="Tambah jumlah">${icon('plus')}</button></div><button class="detail-add" type="submit">Tambah ke pilihan<strong id="detail-total">${rupiah(product.price)}</strong></button></div><p class="allergen-note">Menu dan harga masih berupa contoh.${product.milk?' Beri tahu barista jika kamu memiliki alergi susu.':''}</p></form></div></div>`;
     let quantity=1;
     const form=$('#product-form');
     function updateDetail(){
@@ -187,13 +170,12 @@
     const button=event.target.closest('button');
     if(!button)return;
     if(button.hasAttribute('data-close-dialog')){button.closest('dialog').close();return;}
-    if(button.dataset.favorite){toggleFavorite(button.dataset.favorite,button);return;}
     if(button.dataset.product){showProduct(button.dataset.product);return;}
     if(button.dataset.category){setCategory(button.dataset.category);return;}
     if(button.dataset.action==='cart'){showCart();return;}
-    if(button.dataset.action==='favorites'){
+    if(button.dataset.action==='best-sellers'){
       $('#mobile-nav').hidden=true;$('#mobile-toggle').setAttribute('aria-expanded','false');
-      setCategory('favorites',true);return;
+      setCategory('best-sellers',true);return;
     }
     if(button.dataset.remove){
       const index=cart.findIndex(item=>item.key===button.dataset.remove);

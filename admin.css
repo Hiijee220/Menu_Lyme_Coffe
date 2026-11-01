@@ -3,3 +3,5 @@
 #google-login{width:100%;margin-top:20px;min-height:49px}#admin-access{background:#ecefdf;padding:0 20px 20px;border-radius:14px;margin-top:25px}#admin-access details{border-top:0}#add-admin{margin-top:12px}.admin-row{display:flex;align-items:center;gap:8px;border-bottom:1px solid #ccd5bf;padding:15px 0}.admin-row span{flex:1;overflow-wrap:anywhere;min-width:0;font-size:12px}.admin-row small{display:block;color:var(--muted);font-size:10px}.admin-row button{font-size:10px;padding:7px 12px}@media(max-width:600px){.admin-row{flex-wrap:wrap}.admin-row span{flex-basis:100%}}
 
 #new-menu{margin-top:24px}#copy-admin-link{width:100%;margin-top:12px;white-space:normal}.primary:disabled{cursor:wait}
+
+#best-seller{accent-color:var(--green);width:18px;height:18px}.best-seller-badge{display:inline-block;background:var(--lime);border-radius:99px;padding:4px 9px;font-size:10px;font-weight:600;margin-bottom:9px}
