@@ -1,5 +1,5 @@
 import {auth,db,OWNER_EMAIL,GoogleAuthProvider,signInWithPopup,setPersistence,browserSessionPersistence,onAuthStateChanged,signOut,doc,collection,getDoc,getDocs,runTransaction,serverTimestamp,onSnapshot,updateDoc} from './firebase-client.js?v=20261101-commerce';
-import {settings,defaults,watchOrders,orderMarkup,orderStates,payStates,money,esc,explain} from './commerce.js';
+import {settings,defaults,watchOrders,orderMarkup,orderStates,payStates,money,esc,explain} from './commerce.js?v=20261101-official';
 const $=s=>document.querySelector(s);let orders=[],config={...defaults},qrImage='',stop=null,stopAccess=null,loading=false,session=0;const editingOrders=new Set();
 function status(text,error=false){$('#status').textContent=text;$('#status').classList.toggle('error',error);}
 setPersistence(auth,browserSessionPersistence).then(()=>$('#google-login').disabled=false).catch(e=>status(explain(e),true));

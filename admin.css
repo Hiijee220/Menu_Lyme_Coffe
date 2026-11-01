@@ -7,3 +7,6 @@
 #best-seller{accent-color:var(--green);width:18px;height:18px}.best-seller-badge{display:inline-block;background:var(--lime);border-radius:99px;padding:4px 9px;font-size:10px;font-weight:600;margin-bottom:9px}
 
 .admin-transactions-link{font-size:12px;text-decoration:none;margin-left:auto}header{flex-wrap:wrap;gap:16px}@media(max-width:600px){.admin-transactions-link{font-size:11px}header>span{display:none}}
+
+/* Supplied official logo, displayed from the original unmodified image. */
+.brand-mark{position:relative;display:inline-block;width:128px;aspect-ratio:733/445;overflow:hidden;vertical-align:middle;flex-shrink:0}.brand-mark img{position:absolute!important;width:174.6%!important;max-width:none!important;height:auto!important;left:-44.6%!important;top:-82%!important;mix-blend-mode:multiply}.logo{display:inline-flex;align-items:center;line-height:1}.logo .brand-mark{width:110px}.brand{display:inline-flex;align-items:center;letter-spacing:normal}.footer-brand .brand-mark{width:220px}.footer-brand .brand-mark img{filter:invert(1);mix-blend-mode:screen}

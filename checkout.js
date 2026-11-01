@@ -1,4 +1,4 @@
-import {settings,catalog,customer,submitOrder,money,esc,lineMeta,methods,explain} from './commerce.js';
+import {settings,catalog,customer,submitOrder,money,esc,lineMeta,methods,explain} from './commerce.js?v=20261101-official';
 const $=s=>document.querySelector(s);let config,items=[],busy=false;
 const status=(s,error=false)=>{$('#status').textContent=s;$('#status').classList.toggle('error',error);};
 $('#service').addEventListener('change',()=>{const dine=$('#service').value==='dine-in';$('#table-wrap').hidden=!dine;$('#table').required=dine;});
