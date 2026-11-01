@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const {dayBounds,reportDate,summarizeDay,csvCell,dailyCsv}=await import('data:text/javascript;base64,'+fs.readFileSync(new URL('../daily-report.js',import.meta.url)).toString('base64'));
+const stamp=iso=>({toDate:()=>new Date(iso)});
+const order=(id,total,paymentStatus='paid',status='completed',paymentMethod='cash',created='2026-11-01T10:00:00Z')=>({id,total,paymentStatus,status,paymentMethod,createdAt:stamp(created),customerName:'Pelanggan',service:'takeaway',table:'',note:'',adminNote:'',items:[{productId:'aren',name:'Aren',unitPrice:total,quantity:1,lineTotal:total,note:'Tanpa es'}]});
+assert.equal(dayBounds('2026-11-01').start.toISOString(),'2026-10-31T16:00:00.000Z');
+assert.equal(dayBounds('2026-11-01').end.toISOString(),'2026-11-01T16:00:00.000Z');
+assert.equal(reportDate(new Date('2026-11-01T16:01:00Z')),'2026-11-02');
+assert.throws(()=>dayBounds('2026-02-30'));assert.throws(()=>dayBounds(''));assert.doesNotThrow(()=>dayBounds('2028-02-29'));
+const rows=[order('cash',15000),order('qr',20000,'paid','ready','qr'),order('tf',10000,'paid','preparing','transfer'),order('unpaid',12000,'unpaid','pending'),order('rejected',13000,'rejected','pending'),order('cancel-paid',18000,'paid','cancelled'),order('cancel-unpaid',19000,'unpaid','cancelled'),order('before',999,'paid','completed','cash','2026-10-31T15:59:59.999Z'),order('start',5000,'paid','completed','cash','2026-10-31T16:00:00Z'),order('end',999,'paid','completed','cash','2026-11-01T16:00:00Z')];
+let r=summarizeDay(rows,'2026-11-01');assert.equal(r.rows.length,8);assert.equal(r.revenue,50000);assert.equal(r.paidCount,4);assert.equal(r.unpaidTotal,25000);assert.equal(r.cancelledPaid,18000);assert.equal(r.cancelledTotal,37000);assert.equal(r.payments.reduce((n,p)=>n+p.total,0),r.revenue);assert.equal(r.products.reduce((n,p)=>n+p.total,0),r.revenue);
+const many=Array.from({length:251},(_,i)=>order(String(i),15000));assert.equal(summarizeDay(many,'2026-11-01').revenue,3765000);assert.equal(summarizeDay([],'2026-11-01').revenue,0);
+rows[0].status='cancelled';assert.equal(summarizeDay(rows,'2026-11-01').revenue,35000);rows[3].paymentStatus='paid';assert.equal(summarizeDay(rows,'2026-11-01').revenue,47000);
+for(const attack of ['=HYPERLINK("bad")',' +SUM(1)','@IMPORT','-1+2','\t=1','\r=2'])assert.ok(csvCell(attack).startsWith('"\''));assert.equal(csvCell('Pisang; "Keju"'),'"Pisang; ""Keju"""');
+const csv=dailyCsv(r);assert.ok(csv.startsWith('\ufeff'));assert.ok(csv.includes('RINCIAN TRANSAKSI'));assert.ok(csv.includes('RINCIAN ITEM'));assert.ok(csv.includes('Tanpa es'));assert.ok(csv.includes('"50000"'));console.log('Daily report checks passed: WITA boundaries, 251 orders, payment/cancellation totals, CSV escaping and item details.');
