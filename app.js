@@ -56,6 +56,7 @@
     favCount.hidden = favorites.size === 0;
   }
   function renderMenu() {
+    document.querySelectorAll('.category-tab[data-category]').forEach(tab=>{const count=tab.querySelector('span');if(count)count.textContent=tab.dataset.category==='all'?menu.length:menu.filter(m=>m.category===tab.dataset.category).length;});
     const signature=byId.get('brown-sugar');if(signature){$('.hero-feature strong').textContent=signature.name;$('.hero-feature').disabled=signature.available===false;}
     let items = menu.filter(item => (category === 'all' || (category === 'favorites' ? favorites.has(item.id) : item.category === category)) && `${escape(item.name)} ${escape(item.description)} ${item.tags.join(' ')}`.toLocaleLowerCase('id').includes(query));
     if (sort === 'price-asc') items.sort((a,b) => a.price-b.price);
@@ -222,7 +223,7 @@
   renderMenu();
   const baseMenu=structuredClone(menu);
   import('./firebase-client.js').then(({subscribeMenu})=>subscribeMenu(records=>{
-    if(!records.length)return;firebaseLive=true;const saved=new Map(records.map(m=>[m.id,m]));menu=baseMenu.map(m=>saved.has(m.id)?{...m,...saved.get(m.id)}:m);byId.clear();menu.forEach(m=>byId.set(m.id,m));cart=cart.filter(item=>byId.has(item.productId)&&byId.get(item.productId).available!==false);saveCart();if(productDialog.open)productDialog.close();if(cartDialog.open)renderCart();renderMenu();
+    if(!records.length)return;firebaseLive=true;const saved=new Map(records.map(m=>[m.id,m]));const baseIds=new Set(baseMenu.map(m=>m.id));menu=[...baseMenu.map(m=>saved.has(m.id)?{...m,...saved.get(m.id)}:m),...records.filter(m=>!baseIds.has(m.id))];byId.clear();menu.forEach(m=>byId.set(m.id,m));cart=cart.filter(item=>byId.has(item.productId)&&byId.get(item.productId).available!==false);saveCart();if(productDialog.open)productDialog.close();if(cartDialog.open)renderCart();renderMenu();
   },()=>{})).catch(()=>{});
   setInterval(async()=>{
     if(firebaseLive)return;
