@@ -1,6 +1,7 @@
 (async () => {
   'use strict';
   const {mergeCatalog,needsPrice}=await import('./catalog.js');
+ const {sizeParent,sizeChoices,sizeName}=await import('./menu-sizes.js?v=20261102-sizes');
   let menu = window.LYME_MENU;
   let firebaseLive=false;
   try { const response = await fetch('menu.json?v='+Date.now(), {cache:'no-store'}); if(response.ok) { const data=await response.json(); if(Array.isArray(data)&&data.length) menu=data; } } catch {}
@@ -51,15 +52,15 @@
     const quantity = cart.reduce((total, item) => total + item.quantity, 0);
     $$('.cart-count').forEach(node => { node.textContent = quantity; });
     $('.bag-button').setAttribute('aria-label', `Buka keranjang, ${quantity} item`);
-    const count = menu.filter(isBestSeller).length;
+    const count = menu.filter(m=>!sizeParent(m)&&isBestSeller(m)).length;
     const badge = $('.best-seller-count');
     badge.textContent = count;
     badge.hidden = count === 0;
   }
   function renderMenu() {
-    document.querySelectorAll('.category-tab[data-category]').forEach(tab=>{const count=tab.querySelector('span');if(count)count.textContent=tab.dataset.category==='all'?menu.length:tab.dataset.category==='best-sellers'?menu.filter(isBestSeller).length:menu.filter(m=>m.category===tab.dataset.category).length;if(!['all','best-sellers'].includes(tab.dataset.category))tab.hidden=!menu.some(m=>m.category===tab.dataset.category);});
+    document.querySelectorAll('.category-tab[data-category]').forEach(tab=>{const count=tab.querySelector('span');if(count)count.textContent=tab.dataset.category==='all'?menu.filter(m=>!sizeParent(m)).length:tab.dataset.category==='best-sellers'?menu.filter(m=>!sizeParent(m)&&isBestSeller(m)).length:menu.filter(m=>!sizeParent(m)&&m.category===tab.dataset.category).length;if(!['all','best-sellers'].includes(tab.dataset.category))tab.hidden=!menu.some(m=>m.category===tab.dataset.category);});
     const signature=menu.find(m=>isBestSeller(m)&&m.available!==false)||menu.find(m=>m.id==='lyme-aren')||menu.find(m=>m.available!==false);if(signature){$('.hero-feature').dataset.product=signature.id;$('.hero-feature strong').textContent=signature.name;$('.hero-feature').disabled=signature.available===false;}
-    let items = menu.filter(item => (category === 'all' || (category === 'best-sellers' ? isBestSeller(item) : item.category === category)) && `${escape(item.name)} ${escape(item.description)} ${item.tags.join(' ')}`.toLocaleLowerCase('id').includes(query));
+    let items = menu.filter(item => !sizeParent(item) && (category === 'all' || (category === 'best-sellers' ? isBestSeller(item) : item.category === category)) && `${escape(item.name)} ${escape(item.description)} ${item.tags.join(' ')}`.toLocaleLowerCase('id').includes(query));
     if (sort === 'recommended') items.sort((a,b) => Number(isBestSeller(b))-Number(isBestSeller(a)));
     if (sort === 'price-asc') items.sort((a,b) => a.price-b.price);
     if (sort === 'price-desc') items.sort((a,b) => b.price-a.price);
@@ -100,14 +101,14 @@
     if (!product) return;
     if(product.available===false){toast(needsPrice(product)?'Harga menu ini sedang dikonfirmasi. Silakan hubungi kasir.':'Menu ini sedang habis. Pilih menu lainnya, ya.');return;}
     const defaultTemperature=product.temperature.includes('Iced')?'Iced':product.temperature[0];
-    $('#product-dialog-content').innerHTML=`<div class="product-detail"><div class="detail-visual"><img src="${product.image}" alt="${escape(product.alt)}" width="550" height="750">${isBestSeller(product)?'<span class="card-label best-seller-label">★ Best Seller</span>':product.label?`<span class="card-label signature-label">${escape(product.label)}</span>`:''}</div><div class="detail-copy"><p class="eyebrow">${product.category==='bites'?'A LITTLE BITE OF HAPPINESS':'A CUP FOR YOUR KIND OF DAY'}</p><h2 id="product-dialog-title">${escape(product.name)}</h2><p class="detail-description">${escape(product.detail)}</p><p class="detail-price">${rupiah(product.price)}</p><form id="product-form">${product.tags.some(t=>t.startsWith('Rasa: '))?options('Pilihan rasa','flavor',product.tags.filter(t=>t.startsWith('Rasa: ')).map(t=>t.slice(6)),product.tags.find(t=>t.startsWith('Rasa: ')).slice(6)):''}${product.temperature.length?options('Suhu minuman','temperature',product.temperature,defaultTemperature):''}${product.sweetness?options('Tingkat manis','sweetness',['Normal','Lebih sedikit','Tanpa gula'],'Normal'):''}${product.milk?options('Pilihan susu','milk',['Susu biasa','Oat milk'],'Susu biasa'):''}<label class="note-label" for="detail-note">Catatan <span style="font-weight:400;color:var(--muted)">(opsional)</span></label><textarea class="detail-note" id="detail-note" name="note" maxlength="180" placeholder="Misalnya: esnya sedikit, ya."></textarea><div class="detail-actions"><div class="quantity-control"><button type="button" id="detail-minus" aria-label="Kurangi jumlah" disabled>${icon('minus')}</button><output id="detail-quantity" aria-label="Jumlah">1</output><button type="button" id="detail-plus" aria-label="Tambah jumlah">${icon('plus')}</button></div><button class="detail-add" type="submit">Tambah ke keranjang<strong id="detail-total">${rupiah(product.price)}</strong></button></div><p class="allergen-note">Harga sesuai menu yang dipilih.${product.milk?' Beri tahu barista jika kamu memiliki alergi susu.':''}</p></form></div></div>`;
-    let quantity=1;
+    $('#product-dialog-content').innerHTML=`<div class="product-detail"><div class="detail-visual"><img src="${product.image}" alt="${escape(product.alt)}" width="550" height="750">${isBestSeller(product)?'<span class="card-label best-seller-label">★ Best Seller</span>':product.label?`<span class="card-label signature-label">${escape(product.label)}</span>`:''}</div><div class="detail-copy"><p class="eyebrow">${product.category==='bites'?'A LITTLE BITE OF HAPPINESS':'A CUP FOR YOUR KIND OF DAY'}</p><h2 id="product-dialog-title">${escape(product.name)}</h2><p class="detail-description">${escape(product.detail)}</p><p class="detail-price">${rupiah(product.price)}</p><form id="product-form"><fieldset class="option-group"><legend>Ukuran</legend><div class="option-options">${sizeChoices(menu,product).map((m,i)=>`<label class="option-pill"><input type="radio" name="size" value="${escape(m.id)}" ${i===0?'checked':''} ${m.available===false?'disabled':''}><span>${sizeName(m)} · ${rupiah(m.price)}${m.available===false?' (habis)':''}</span></label>`).join('')}${sizeChoices(menu,product).length===1?'<label class="option-pill"><input type="radio" name="size" disabled><span>Large/besar · Belum tersedia</span></label>':''}</div></fieldset>${product.tags.some(t=>t.startsWith('Rasa: '))?options('Pilihan rasa','flavor',product.tags.filter(t=>t.startsWith('Rasa: ')).map(t=>t.slice(6)),product.tags.find(t=>t.startsWith('Rasa: ')).slice(6)):''}${product.temperature.length?options('Suhu minuman','temperature',product.temperature,defaultTemperature):''}${product.sweetness?options('Tingkat manis','sweetness',['Normal','Lebih sedikit','Tanpa gula'],'Normal'):''}${product.milk?options('Pilihan susu','milk',['Susu biasa','Oat milk'],'Susu biasa'):''}<label class="note-label" for="detail-note">Catatan <span style="font-weight:400;color:var(--muted)">(opsional)</span></label><textarea class="detail-note" id="detail-note" name="note" maxlength="180" placeholder="Misalnya: esnya sedikit, ya."></textarea><div class="detail-actions"><div class="quantity-control"><button type="button" id="detail-minus" aria-label="Kurangi jumlah" disabled>${icon('minus')}</button><output id="detail-quantity" aria-label="Jumlah">1</output><button type="button" id="detail-plus" aria-label="Tambah jumlah">${icon('plus')}</button></div><button class="detail-add" type="submit">Tambah ke keranjang<strong id="detail-total">${rupiah(product.price)}</strong></button></div><p class="allergen-note">Harga sesuai menu yang dipilih.${product.milk?' Beri tahu barista jika kamu memiliki alergi susu.':''}</p></form></div></div>`;
+    const choices=sizeChoices(menu,product);let quantity=1;
     const form=$('#product-form');
     function updateDetail(){
-      $('#detail-quantity').textContent=quantity;
+      $('.detail-price').textContent=rupiah((byId.get(new FormData(form).get('size'))||product).price);$('#detail-quantity').textContent=quantity;
       $('#detail-minus').disabled=quantity<=1;
       $('#detail-plus').disabled=quantity>=20;
-      $('#detail-total').textContent=rupiah((product.price+(new FormData(form).get('milk')==='Oat milk'?6000:0))*quantity);
+      $('#detail-total').textContent=rupiah(((byId.get(new FormData(form).get('size'))||product).price+(new FormData(form).get('milk')==='Oat milk'?6000:0))*quantity);
     }
     $('#detail-minus').addEventListener('click',()=>{quantity=Math.max(1,quantity-1);updateDetail();});
     $('#detail-plus').addEventListener('click',()=>{quantity=Math.min(20,quantity+1);updateDetail();});
@@ -115,8 +116,8 @@
     form.addEventListener('submit',event=>{
       event.preventDefault();
       const data=new FormData(form);
-      const selection={productId:id,temperature:data.get('temperature')||'',sweetness:data.get('sweetness')||'',milk:data.get('milk')||'',note:[data.get('flavor')?'Rasa: '+data.get('flavor'):'',String(data.get('note')||'').trim()].filter(Boolean).join(' · ').slice(0,180)};
-      const existing=cart.find(item=>item.productId===id&&item.temperature===selection.temperature&&item.sweetness===selection.sweetness&&item.milk===selection.milk&&item.note===selection.note&&item.quantity+quantity<=20);
+      const chosen=byId.get(data.get('size'))||product;if(chosen.available===false)return;const selection={productId:chosen.id,temperature:data.get('temperature')||'',sweetness:data.get('sweetness')||'',milk:data.get('milk')||'',note:['Ukuran: '+sizeName(chosen),data.get('flavor')?'Rasa: '+data.get('flavor'):'',String(data.get('note')||'').trim()].filter(Boolean).join(' · ').slice(0,180)};
+      const existing=cart.find(item=>item.productId===selection.productId&&item.temperature===selection.temperature&&item.sweetness===selection.sweetness&&item.milk===selection.milk&&item.note===selection.note&&item.quantity+quantity<=20);
       if(!existing&&cart.length>=8){toast('Maksimal 8 variasi menu per pesanan. Selesaikan pesanan ini terlebih dahulu.');return;}
       if(existing)existing.quantity+=quantity;
       else cart.push({...selection,key:crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2),quantity});

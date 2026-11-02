@@ -258,39 +258,35 @@
     "id": "lyme-lemon-tea",
     "name": "Lemon Tea",
     "category": "non-coffee",
-    "price": 0,
+    "price": 7000,
     "image": "assets/menu-photo-coming.svg",
     "alt": "Foto Lemon Tea segera hadir",
-    "description": "Harga perlu konfirmasi. Tercantum 7k / 10k.",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
     "tags": [
-      "Tea series",
-      "Konfirmasi harga"
+      "Tea series"
     ],
     "temperature": [],
     "milk": false,
     "sweetness": false,
-    "detail": "Harga perlu konfirmasi. Tercantum 7k / 10k. Pemesanan tersedia setelah harga dipastikan.",
-    "available": false,
-    "label": "Tercantum 7k / 10k"
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "available": true
   },
   {
     "id": "lyme-lychee-tea",
     "name": "Lychee Tea",
     "category": "non-coffee",
-    "price": 0,
+    "price": 7000,
     "image": "assets/menu-photo-coming.svg",
     "alt": "Foto Lychee Tea segera hadir",
-    "description": "Harga perlu konfirmasi. Tercantum 7k / 10k.",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
     "tags": [
-      "Tea series",
-      "Konfirmasi harga"
+      "Tea series"
     ],
     "temperature": [],
     "milk": false,
     "sweetness": false,
-    "detail": "Harga perlu konfirmasi. Tercantum 7k / 10k. Pemesanan tersedia setelah harga dipastikan.",
-    "available": false,
-    "label": "Tercantum 7k / 10k"
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "available": true
   },
   {
     "id": "lyme-blue-lagoon-mocktail",
@@ -349,20 +345,18 @@
     "id": "lyme-americano",
     "name": "Americano",
     "category": "coffee",
-    "price": 0,
+    "price": 7000,
     "image": "assets/menu-photo-coming.svg",
     "alt": "Foto Americano segera hadir",
-    "description": "Harga perlu konfirmasi. Tercantum 7k / 10k.",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
     "tags": [
-      "Coffee specialties",
-      "Konfirmasi harga"
+      "Coffee specialties"
     ],
     "temperature": [],
     "milk": false,
     "sweetness": false,
-    "detail": "Harga perlu konfirmasi. Tercantum 7k / 10k. Pemesanan tersedia setelah harga dipastikan.",
-    "available": false,
-    "label": "Tercantum 7k / 10k"
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "available": true
   },
   {
     "id": "lyme-butterscotch",
@@ -783,6 +777,63 @@
     "milk": false,
     "sweetness": false,
     "detail": "Ice Cream & Toast dari menu resmi LyMe Coffe & Eatery.",
+    "available": true
+  },
+  {
+    "id": "lyme-lemon-tea-large",
+    "name": "Lemon Tea · Large/besar",
+    "category": "non-coffee",
+    "price": 10000,
+    "image": "assets/menu-photo-coming.svg",
+    "alt": "Foto Lemon Tea segera hadir",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "tags": [
+      "Tea series",
+      "Induk: lyme-lemon-tea",
+      "Ukuran: Large"
+    ],
+    "temperature": [],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "available": true
+  },
+  {
+    "id": "lyme-lychee-tea-large",
+    "name": "Lychee Tea · Large/besar",
+    "category": "non-coffee",
+    "price": 10000,
+    "image": "assets/menu-photo-coming.svg",
+    "alt": "Foto Lychee Tea segera hadir",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "tags": [
+      "Tea series",
+      "Induk: lyme-lychee-tea",
+      "Ukuran: Large"
+    ],
+    "temperature": [],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "available": true
+  },
+  {
+    "id": "lyme-americano-large",
+    "name": "Americano · Large/besar",
+    "category": "coffee",
+    "price": 10000,
+    "image": "assets/menu-photo-coming.svg",
+    "alt": "Foto Americano segera hadir",
+    "description": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
+    "tags": [
+      "Coffee specialties",
+      "Induk: lyme-americano",
+      "Ukuran: Large"
+    ],
+    "temperature": [],
+    "milk": false,
+    "sweetness": false,
+    "detail": "Medium/sedang Rp7.000 · Large/besar Rp10.000.",
     "available": true
   }
 ]
