@@ -1,5 +1,5 @@
 // Minimal OOXML workbook exporter. ZIP entries use STORE, supported by Excel/Numbers.
-import {orderDate,REPORT_ZONE} from './daily-report.js?v=20261102-summary';
+import {orderDate,REPORT_ZONE} from './daily-report.js?v=20261102-details';
 const xml=s=>String(s??'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
 const col=n=>{let s='';for(n++;n;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s;};
 const enc=new TextEncoder();
@@ -38,10 +38,33 @@ export function reportXlsx(r){
  full(28,'Penjualan dikelompokkan menurut tanggal pesanan dan status saat laporan diunduh. Pesanan dibatalkan dikecualikan dari penjualan lunas.',9,34);
  full(29,'Rincian metode menunjukkan pembayaran yang ditandai lunas oleh admin; belum merupakan pencocokan dengan saldo bank atau kas fisik.',9,34);
  full(30,'Pembatalan setelah lunas memerlukan tindak lanjut kasir. Biaya, HPP dan pengembalian dana aktual belum dicatat pada laporan ini.',9,34);
- if(!r.rows.length)full(32,'Tidak ada transaksi pada tanggal ini. Nilai laporan adalah nol.',9,25);
- const summary=`<worksheet xmlns="${NS}"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews><cols>${[7,24,19,12,15,15].map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${rows.join('')}</sheetData><mergeCells count="${merges.length}">${merges.map(ref=>`<mergeCell ref="${ref}"/>`).join('')}</mergeCells><pageMargins left="0.35" right="0.35" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="1"/><headerFooter><oddFooter>&amp;L LyMe Coffe &amp;R Halaman &amp;P / &amp;N</oddFooter></headerFooter></worksheet>`;
+
+ let next=32;
+ const wrapHeight=(text,width=90)=>Math.max(26,Math.ceil(String(text).length/width)*16+10);
+ full(next++,'D. MENU TERJUAL — PESANAN LUNAS',2,26);
+ let n=next++;merges.push(`B${n}:C${n}`);row(n,[c('A'+n,'No.',2),c('B'+n,'Menu / harga satuan',2),c('D'+n,'Jumlah',2),c('E'+n,'Penjualan (Rp)',2)],32);merges.push(`E${n}:F${n}`);
+ const productStart=next;
+ r.products.forEach((p,index)=>{const n=next++;merges.push(`B${n}:C${n}`,`E${n}:F${n}`);row(n,[c('A'+n,index+1,3),c('B'+n,p.name+'\nHarga: Rp'+new Intl.NumberFormat('id-ID').format(p.unitPrice),3),c('D'+n,p.quantity,5),c('E'+n,p.total,4)],Math.max(40,wrapHeight(p.name,35)+18));});
+ if(!r.products.length)full(next++,'Belum ada menu terjual dari pesanan lunas.',9,26);
+ const productEnd=next-1,itemCount=r.products.reduce((n,p)=>n+p.quantity,0);
+ line(next++,'','TOTAL MENU TERJUAL',itemCount,r.revenue,r.products.length?`SUM(E${productStart}:E${productEnd})`:undefined,true);
+ next++;
+ full(next++,'E. RINCIAN PEMESAN DAN TRANSAKSI',2,26);
+ n=next++;merges.push(`E${n}:F${n}`);row(n,[c('A'+n,'No.',2),c('B'+n,'Nama pemesan',2),c('C'+n,'Nomor / jam WITA',2),c('D'+n,'Item',2),c('E'+n,'Total pesanan (Rp)',2)],36);
+ r.rows.forEach((o,index)=>{const n=next++,qty=o.items.reduce((v,i)=>v+i.quantity,0);merges.push(`E${n}:F${n}`);row(n,[c('A'+n,index+1,3),c('B'+n,o.customerName,3),c('C'+n,o.id+'\n'+time(o),3),c('D'+n,qty,5),c('E'+n,o.total,4)],Math.max(64,wrapHeight(o.customerName,22),wrapHeight(o.id,17)+18));
+ const meta=`${states[o.status]||o.status} | ${pay[o.paymentStatus]||o.paymentStatus} | ${methods[o.paymentMethod]||o.paymentMethod} | ${o.service==='dine-in'?'Meja '+o.table:'Bawa pulang'}`;full(next++,meta,9,wrapHeight(meta));
+ for(const item of o.items){const detail=`${item.quantity} × ${item.name} — Rp${new Intl.NumberFormat('id-ID').format(item.lineTotal)}${item.note?' | '+item.note:''}`;full(next++,detail,9,wrapHeight(detail));}
+ if(o.note){const note='Catatan pemesan: '+o.note;full(next++,note,9,wrapHeight(note));}
+ if(o.adminNote){const note='Keterangan admin: '+o.adminNote;full(next++,note,9,wrapHeight(note));}
+ next++;
+ });
+ if(!r.rows.length)full(next++,'Tidak ada transaksi pada tanggal ini.',9,26);
+ line(next++,'','TOTAL SELURUH PESANAN',r.rows.reduce((v,o)=>v+o.items.reduce((n,i)=>n+i.quantity,0),0),gross,'E10',true);
+ full(next++,'Bagian E mencakup seluruh status pesanan. Jumlah item dan nilai penjualan lunas tercantum pada bagian D.',9,34);
+ const lastRow=next-1;
+ const summary=`<worksheet xmlns="${NS}"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews><cols>${[7,24,19,12,15,15].map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${rows.join('')}</sheetData><mergeCells count="${merges.length}">${merges.map(ref=>`<mergeCell ref="${ref}"/>`).join('')}</mergeCells><pageMargins left="0.35" right="0.35" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/><headerFooter><oddFooter>&amp;L LyMe Coffe &amp;R Halaman &amp;P / &amp;N</oddFooter></headerFooter></worksheet>`;
  const files=[['xl/worksheets/sheet1.xml',summary],['xl/styles.xml',styles],
- ['xl/workbook.xml',`<workbook xmlns="${NS}" xmlns:r="${REL}"><sheets><sheet name="Ringkasan" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm.Print_Area" localSheetId="0">'Ringkasan'!$A$1:$F$${r.rows.length?30:32}</definedName></definedNames><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`],
+ ['xl/workbook.xml',`<workbook xmlns="${NS}" xmlns:r="${REL}"><sheets><sheet name="Ringkasan" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm.Print_Area" localSheetId="0">'Ringkasan'!$A$1:$F$${lastRow}</definedName></definedNames><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`],
  ['xl/_rels/workbook.xml.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${REL}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${REL}/styles" Target="styles.xml"/></Relationships>`],
  ['_rels/.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${REL}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
  ['[Content_Types].xml',`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`]];

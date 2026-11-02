@@ -1,4 +1,4 @@
-import {mountDailyReport} from './daily-report-ui.js?v=20261102-summary';
+import {mountDailyReport} from './daily-report-ui.js?v=20261102-details';
 import {bindAdminLogin} from './admin-login.js?v=20261101-login-help';
 import {auth,db,OWNER_EMAIL,GoogleAuthProvider,signInWithPopup,setPersistence,browserSessionPersistence,onAuthStateChanged,signOut,doc,collection,getDoc,getDocs,runTransaction,serverTimestamp,onSnapshot,updateDoc} from './firebase-client.js?v=20261101-commerce';
 import {settings,defaults,watchOrders,orderMarkup,orderStates,payStates,money,esc,explain} from './commerce.js?v=20261101-official';
