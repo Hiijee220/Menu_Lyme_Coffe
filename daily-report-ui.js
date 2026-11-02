@@ -1,6 +1,7 @@
+import {reportXlsx} from './report-xlsx.js?v=20261102-xlsx';
 import {db,collection,query,where,orderBy,onSnapshot} from './firebase-client.js?v=20261101-commerce';
 import {money,esc,methods,orderStates,payStates} from './commerce.js?v=20261101-official';
-import {reportDate,dayBounds,summarizeDay,dailyCsv,orderDate,REPORT_ZONE} from './daily-report.js?v=20261101-report';
+import {reportDate,dayBounds,summarizeDay,orderDate,REPORT_ZONE} from './daily-report.js?v=20261101-report';
 export function mountDailyReport(){
   const $=s=>document.querySelector(s);let stop=null,epoch=0,active=false,current=null,followToday=true;
   const date=$('#report-date'),download=$('#report-download'),notice=$('#report-status'),content=$('#report-content');
@@ -21,6 +22,6 @@ export function mountDailyReport(){
   date.addEventListener('change',()=>{followToday=date.value===reportDate();load();});$('#report-today').addEventListener('click',()=>{followToday=true;date.value=reportDate();load();});$('#report-reload').addEventListener('click',load);
   function rollover(){if(active&&followToday&&date.value!==reportDate()){date.value=reportDate();load();}}
   setInterval(rollover,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollover();});
-  download.addEventListener('click',()=>{if(!current)return;const blob=new Blob([dailyCsv(current)],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Lyme-Penjualan-${current.day}-WITA.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);});
+  download.addEventListener('click',()=>{if(!current)return;const blob=new Blob([reportXlsx(current)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Lyme-Penjualan-${current.day}-WITA.xlsx`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);});
   return {start(){active=true;load();},clear};
 }
