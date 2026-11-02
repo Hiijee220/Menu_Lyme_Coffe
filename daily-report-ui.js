@@ -1,4 +1,4 @@
-import {reportXlsx} from './report-xlsx.js?v=20261102-compact';
+import {reportXlsx} from './report-xlsx.js?v=20261102-income';
 import {db,collection,query,where,orderBy,onSnapshot} from './firebase-client.js?v=20261101-commerce';
 import {money,esc,methods,orderStates,payStates} from './commerce.js?v=20261101-official';
 import {reportDate,dayBounds,summarizeDay,orderDate,REPORT_ZONE} from './daily-report.js?v=20261101-report';
