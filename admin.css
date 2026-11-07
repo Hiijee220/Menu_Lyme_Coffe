@@ -12,3 +12,12 @@
 .brand-mark{position:relative;display:inline-block;width:128px;aspect-ratio:733/445;overflow:hidden;vertical-align:middle;flex-shrink:0}.brand-mark img{position:absolute!important;width:174.6%!important;max-width:none!important;height:auto!important;left:-44.6%!important;top:-82%!important;mix-blend-mode:multiply}.logo{display:inline-flex;align-items:center;line-height:1}.logo .brand-mark{width:110px}.brand{display:inline-flex;align-items:center;letter-spacing:normal}.footer-brand .brand-mark{width:220px}.footer-brand .brand-mark img{filter:invert(1);mix-blend-mode:screen}
 
 #photo-status{font-size:13px;overflow-wrap:anywhere;color:var(--green)}#photo-status.error{color:#9a3928}#apply{position:sticky;bottom:0;box-shadow:0 0 0 8px var(--paper);min-height:46px}
+
+.flavor-editor{min-width:0;margin:18px 0;padding:10px 14px 14px;border:1px solid #cad3bd;border-radius:10px}
+.flavor-editor legend{padding:0 5px;font-size:12px;font-weight:500}
+.flavor-editor .hint{margin:0 0 10px}
+.flavor-field{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.flavor-field input{min-width:0;flex:1}
+.flavor-field button{padding:10px 14px}
+#flavor-status{color:#9a3928;margin:8px 0 0}
+#flavor-status:empty{display:none}

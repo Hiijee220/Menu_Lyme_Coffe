@@ -10,6 +10,62 @@ const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>
 let menu=[],original='',versions=new Map(),dirty=false,busy=false,editing=null,pendingPhoto=null,photoBusy=false,photoVersion=0,newDraft=null;
 const images=new Map();
 const isBestSeller=m=>(m.tags||[]).includes('Best Seller');
+const flavorPrefix = 'Rasa: ';
+const isFlavor = tag => tag.startsWith(flavorPrefix);
+const flavorsOf = menuItem => (menuItem.tags || []).filter(isFlavor).map(tag => tag.slice(flavorPrefix.length));
+const flavorFields = $('#flavor-fields');
+const flavorStatus = $('#flavor-status');
+
+function addFlavorField(flavor = '') {
+  const row = document.createElement('div');
+  row.className = 'flavor-field';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.maxLength = 40;
+  input.placeholder = 'Nama rasa';
+  input.setAttribute('aria-label', 'Nama rasa');
+  input.value = flavor;
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'secondary';
+  remove.textContent = 'Hapus';
+  remove.setAttribute('aria-label', 'Hapus pilihan rasa ini');
+  remove.addEventListener('click', () => {
+    const nextInput = row.nextElementSibling?.querySelector('input') || row.previousElementSibling?.querySelector('input');
+    row.remove();
+    flavorStatus.textContent = '';
+    (nextInput || $('#add-flavor')).focus();
+  });
+  row.append(input, remove);
+  flavorFields.append(row);
+  return input;
+}
+
+function showFlavorFields(menuItem) {
+  flavorFields.replaceChildren();
+  flavorStatus.textContent = '';
+  flavorsOf(menuItem).forEach(flavor => addFlavorField(flavor));
+}
+
+$('#add-flavor').addEventListener('click', () => {
+  const inputs = [...flavorFields.querySelectorAll('input')];
+  const empty = inputs.find(input => !input.value.trim());
+  if (empty) {
+    empty.focus();
+  } else if (inputs.length < 8) {
+    addFlavorField().focus();
+  } else {
+    flavorStatus.textContent = 'Maksimal 8 pilihan rasa, tergantung pengaturan menu.';
+  }
+});
+
+function removeOldFlavorSummary(text, flavors) {
+  if (!flavors.length) return text;
+  const list = flavors.join(', ') + '.';
+  const suffix = ['Pilihan rasa: ', 'Pilihan rasa '].map(prefix => prefix + list).find(value => text.endsWith(value));
+  return suffix ? text.slice(0, -suffix.length).trimEnd() : text;
+}
+
 const status=(text,error=false)=>{$('#status').textContent=text;$('#status').classList.toggle('error',error);};
 let stopAccess=null,stopAdmins=null,owner=false,session=0;
 const clean=m=>{const copy={...m};delete copy.updatedAt;return copy;};
@@ -26,12 +82,88 @@ $('#admin-list').addEventListener('click',async e=>{if(!owner)return;const b=e.t
 function changed(){dirty=JSON.stringify(menu)!==original||images.size>0;$('#dirty').textContent=dirty?'Ada perubahan yang belum diterbitkan':'Semua perubahan tersimpan';$('#save').disabled=!dirty||busy;$('#discard').disabled=!dirty||busy;}
 function render(){const q=$('#search').value.toLocaleLowerCase('id'),filter=$('#filter').value;const shown=menu.filter(m=>!sizeParent(m)&&m.name.toLocaleLowerCase('id').includes(q)&&(filter==='all'||(filter==='best-sellers'?isBestSeller(m):filter==='available'?m.available!==false:m.available===false)));$('#summary').textContent=menu.filter(m=>!sizeParent(m)).length+' menu · '+menu.filter(m=>!sizeParent(m)&&m.available===false&&!needsPrice(m)).length+' sedang habis · '+menu.filter(m=>!sizeParent(m)&&needsPrice(m)).length+' perlu konfirmasi harga · '+menu.filter(m=>!sizeParent(m)&&isBestSeller(m)).length+' Best Seller';$('#cards').innerHTML=shown.map(m=>`<article class="card"><div class="picture"><img src="${esc(images.get(m.id)?.preview||m.image)}" alt="${esc(m.name)}"><span class="badge ${m.available===false?'sold':''}">${needsPrice(m)?'Konfirmasi harga':m.available===false?'Habis sementara':'Tersedia'}</span></div><div class="copy">${isBestSeller(m)?'<span class="best-seller-badge">★ Best Seller</span>':''}<h2>${esc(m.name)}</h2><p>${needsPrice(m)?'Harga perlu dikonfirmasi':'Rp'+new Intl.NumberFormat('id-ID').format(m.price)}</p><div class="card-actions"><button class="secondary" data-edit="${esc(m.id)}" ${busy?'disabled':''}>Edit menu ↗</button><button class="stock-toggle ${m.available===false?'off':''}" data-stock="${esc(m.id)}" aria-pressed="${m.available!==false}" ${busy?'disabled':''}>${m.available===false?'✓ Tandai tersedia':'Tandai habis'}</button></div></div></article>`).join('');$('#no-results').hidden=shown.length!==0;changed();}
 async function logout(){if(busy)return;if(dirty&&!confirm('Keluar dan buang perubahan yang belum disimpan?'))return;dirty=false;menu=[];images.clear();await signOut(auth);status('Anda sudah keluar.');}
-$('#new-menu').addEventListener('click',()=>{if(busy)return;editing=null;newDraft={id:'menu-'+(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)),name:'',price:0,image:'assets/menu-photo-coming.svg',alt:'',category:'coffee',description:'',detail:'',tags:['Menu baru'],temperature:['Hot','Iced'],milk:true,sweetness:true,available:true};pendingPhoto=null;photoVersion++;photoBusy=false;$('#apply').disabled=false;$('#large-price').value='';$('#large-available').checked=true;$('#editor-title').textContent='Tambah menu';$('#name').value='';$('#price').value='';$('#description').value='';$('#category').value='coffee';$('#available').checked=true;$('#best-seller').checked=false;$('#photo').value='';$('#edit-photo').src=newDraft.image;$('#photo-status').textContent='Foto boleh menyusul. Menu tetap bisa disimpan tanpa foto.';$('#editor').showModal();});
+$('#new-menu').addEventListener('click',()=>{if(busy)return;editing=null;newDraft={id:'menu-'+(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)),name:'',price:0,image:'assets/menu-photo-coming.svg',alt:'',category:'coffee',description:'',detail:'',tags:['Menu baru'],temperature:['Hot','Iced'],milk:true,sweetness:true,available:true};pendingPhoto=null;photoVersion++;photoBusy=false;$('#apply').disabled=false;$('#large-price').value='';$('#large-available').checked=true;$('#editor-title').textContent='Tambah menu';$('#name').value='';$('#price').value='';$('#description').value='';showFlavorFields(newDraft);$('#category').value='coffee';$('#available').checked=true;$('#best-seller').checked=false;$('#photo').value='';$('#edit-photo').src=newDraft.image;$('#photo-status').textContent='Foto boleh menyusul. Menu tetap bisa disimpan tanpa foto.';$('#editor').showModal();});
 $('#logout').addEventListener('click',logout);$('#search').addEventListener('input',render);$('#filter').addEventListener('change',render);
-$('#cards').addEventListener('click',e=>{if(busy)return;const b=e.target.closest('button');if(!b)return;const id=b.dataset.edit||b.dataset.stock;const m=menu.find(m=>m.id===id);if(!m)return;if(b.dataset.stock){if(needsPrice(m)){status('Isi harga melalui Edit menu dan aktifkan Menu tersedia terlebih dahulu.',true);return;}m.available=m.available===false;render();return;}editing=m.id;newDraft=null;const large=menu.find(x=>sizeParent(x)===m.id);$('#large-price').value=large?.price||'';$('#large-available').checked=large?.available!==false;$('#editor-title').textContent='Edit menu';$('#category').value=m.category;pendingPhoto=null;photoVersion++;photoBusy=false;$('#apply').disabled=false;$('#name').value=m.name;$('#price').value=needsPrice(m)?'':m.price;$('#description').value=m.description;$('#available').checked=m.available!==false;$('#best-seller').checked=isBestSeller(m);$('#photo').value='';$('#edit-photo').src=images.get(m.id)?.preview||m.image;$('#photo-status').textContent=needsPrice(m)?'Pastikan harga terlebih dahulu, lalu isi harga dan aktifkan Menu tersedia.':'';$('#editor').showModal();});
+$('#cards').addEventListener('click',e=>{if(busy)return;const b=e.target.closest('button');if(!b)return;const id=b.dataset.edit||b.dataset.stock;const m=menu.find(m=>m.id===id);if(!m)return;if(b.dataset.stock){if(needsPrice(m)){status('Isi harga melalui Edit menu dan aktifkan Menu tersedia terlebih dahulu.',true);return;}m.available=m.available===false;render();return;}editing=m.id;newDraft=null;const large=menu.find(x=>sizeParent(x)===m.id);$('#large-price').value=large?.price||'';$('#large-available').checked=large?.available!==false;$('#editor-title').textContent='Edit menu';$('#category').value=m.category;pendingPhoto=null;photoVersion++;photoBusy=false;$('#apply').disabled=false;$('#name').value=m.name;$('#price').value=needsPrice(m)?'':m.price;$('#description').value=m.description;showFlavorFields(m);$('#available').checked=m.available!==false;$('#best-seller').checked=isBestSeller(m);$('#photo').value='';$('#edit-photo').src=images.get(m.id)?.preview||m.image;$('#photo-status').textContent=needsPrice(m)?'Pastikan harga terlebih dahulu, lalu isi harga dan aktifkan Menu tersedia.':'';$('#editor').showModal();});
 $('#close-editor').addEventListener('click',()=>$('#editor').close());
 $('#photo').addEventListener('change',async()=>{const file=$('#photo').files[0];if(!file)return;const version=++photoVersion;const previous=pendingPhoto;photoBusy=true;$('#apply').disabled=true;$('#photo-status').textContent='Menyiapkan foto…';$('#photo-status').classList.remove('error');try{const result=await prepareMenuPhoto(file);if(version!==photoVersion)return;pendingPhoto=result;$('#edit-photo').src=result.preview;$('#photo-status').textContent='Foto siap. Tekan Terapkan perubahan, lalu Simpan perubahan untuk menyimpan ke website.';}catch(error){if(version===photoVersion){pendingPhoto=previous;$('#photo-status').textContent=error.message;$('#photo-status').classList.add('error');$('#photo').value='';}}finally{if(version===photoVersion){photoBusy=false;$('#apply').disabled=false;}}});
-$('#edit-form').addEventListener('submit',e=>{e.preventDefault();if(photoBusy)return;const m=newDraft||menu.find(m=>m.id===editing),name=$('#name').value.trim(),price=Number($('#price').value);if(!name||!Number.isSafeInteger(price)||price<0||price>10000000)return;const largeText=$('#large-price').value.trim(),largePrice=Number(largeText);if(largeText&&(!Number.isSafeInteger(largePrice)||largePrice<=0||largePrice>10000000)){$('#photo-status').textContent='Harga Large harus lebih dari nol.';return;}if(needsPrice(m)&&$('#available').checked&&price<=0){$('#photo-status').textContent='Masukkan harga yang sudah dipastikan sebelum mengaktifkan menu.';return;}if(needsPrice(m)&&$('#available').checked&&price>0){m.tags=m.tags.filter(t=>t!=='Konfirmasi harga');delete m.label;}const tags=(m.tags||[]).filter(tag=>tag!=='Best Seller');if($('#best-seller').checked){if(tags.length>=8){$('#photo-status').textContent='Menu ini sudah memiliki terlalu banyak tag. Kurangi tag sebelum menandainya sebagai Best Seller.';return;}tags.push('Best Seller');}m.tags=tags;m.category=$('#category').value;if(newDraft){m.temperature=m.category==='bites'?[]:['Hot','Iced'];m.milk=['coffee','non-coffee','signature'].includes(m.category);m.sweetness=m.category!=='bites';menu.push(m);}m.name=name;m.price=price;const description=$('#description').value.trim();if(newDraft||m.description!==description)m.detail=description;m.description=description;m.available=$('#available').checked;m.alt='Foto '+name;if(pendingPhoto)images.set(m.id,pendingPhoto);const oldLarge=menu.find(x=>sizeParent(x)===m.id);if(largeText){const variant=largeVariant(m,largePrice,$('#large-available').checked,oldLarge);if(oldLarge)Object.assign(oldLarge,variant);else menu.push(variant);if(pendingPhoto)images.set(variant.id,pendingPhoto);}else if(oldLarge)oldLarge.available=false;newDraft=null;$('#editor').close();render();status('Draf menu diperbarui. Tekan Simpan perubahan untuk menerbitkannya.');});
+$('#edit-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (photoBusy) return;
+  const m = newDraft || menu.find(item => item.id === editing);
+  const name = $('#name').value.trim();
+  const price = Number($('#price').value);
+  if (!name || !Number.isSafeInteger(price) || price < 0 || price > 10000000) return;
+
+  const largeText = $('#large-price').value.trim();
+  const largePrice = Number(largeText);
+  if (largeText && (!Number.isSafeInteger(largePrice) || largePrice <= 0 || largePrice > 10000000)) {
+    $('#photo-status').textContent = 'Harga Large harus lebih dari nol.';
+    return;
+  }
+
+  const available = $('#available').checked;
+  const confirmPrice = needsPrice(m) && available;
+  if (confirmPrice && price <= 0) {
+    $('#photo-status').textContent = 'Masukkan harga yang sudah dipastikan sebelum mengaktifkan menu.';
+    return;
+  }
+
+  const oldFlavors = flavorsOf(m);
+  const flavors = [...flavorFields.querySelectorAll('input')]
+    .map(input => input.value.trim().replace(/\s+/g, ' '))
+    .filter(Boolean);
+  flavorStatus.textContent = '';
+  if (new Set(flavors.map(flavor => flavor.toLocaleLowerCase('id'))).size !== flavors.length) {
+    flavorStatus.textContent = 'Setiap pilihan rasa harus memiliki nama yang berbeda.';
+    return;
+  }
+
+  const tags = (m.tags || []).filter(tag => !isFlavor(tag) && tag !== 'Best Seller' && !(confirmPrice && tag === 'Konfirmasi harga'));
+  if ($('#best-seller').checked) tags.push('Best Seller');
+  const maxFlavors = Math.min(8 - tags.length, largeText ? 6 - tags.filter(tag => tag !== 'Konfirmasi harga').length : 8);
+  if (flavors.length > Math.max(0, maxFlavors) || tags.length > 8) {
+    flavorStatus.textContent = 'Pengaturan menu ini mendukung maksimal ' + Math.max(0, maxFlavors) + ' pilihan rasa.';
+    return;
+  }
+
+  const flavorChanged = JSON.stringify(oldFlavors) !== JSON.stringify(flavors);
+  const enteredDescription = $('#description').value.trim();
+  const description = flavorChanged ? removeOldFlavorSummary(enteredDescription, oldFlavors) || enteredDescription : enteredDescription;
+  if (newDraft || m.description !== enteredDescription) {
+    m.detail = description;
+  } else if (flavorChanged) {
+    m.detail = removeOldFlavorSummary(m.detail, oldFlavors) || description;
+  }
+  m.description = description;
+  if (confirmPrice) delete m.label;
+  m.tags = [...tags, ...flavors.map(flavor => flavorPrefix + flavor)];
+  m.category = $('#category').value;
+  if (newDraft) {
+    m.temperature = m.category === 'bites' ? [] : ['Hot', 'Iced'];
+    m.milk = ['coffee', 'non-coffee', 'signature'].includes(m.category);
+    m.sweetness = m.category !== 'bites';
+    menu.push(m);
+  }
+  m.name = name;
+  m.price = price;
+  m.available = available;
+  m.alt = 'Foto ' + name;
+  if (pendingPhoto) images.set(m.id, pendingPhoto);
+  const oldLarge = menu.find(item => sizeParent(item) === m.id);
+  if (largeText) {
+    const variant = largeVariant(m, largePrice, $('#large-available').checked, oldLarge);
+    if (oldLarge) Object.assign(oldLarge, variant);
+    else menu.push(variant);
+    if (pendingPhoto) images.set(variant.id, pendingPhoto);
+  } else if (oldLarge) {
+    oldLarge.available = false;
+  }
+  newDraft = null;
+  $('#editor').close();
+  render();
+  status('Draf menu diperbarui. Tekan Simpan perubahan untuk menerbitkannya.');
+});
 $('#discard').addEventListener('click',()=>{if(busy||!confirm('Batalkan semua perubahan yang belum diterbitkan?'))return;menu=JSON.parse(original);images.clear();render();status('Draf dibatalkan.');});
 $('#save').addEventListener('click',async()=>{if(busy||!dirty||!auth.currentUser)return;busy=true;$('#logout').disabled=true;render();status('Menyimpan perubahan menu…');try{const previous=new Map(JSON.parse(original).map(m=>[m.id,m]));const updates=menu.filter(m=>JSON.stringify(m)!==JSON.stringify(previous.get(m.id))||images.has(m.id)).map(m=>({...m,...(images.has(m.id)?{image:images.get(m.id).preview}: {})}));await runTransaction(db,async transaction=>{const checks=[];for(const m of updates){const ref=doc(db,'lymeMenus',m.id);const snap=await transaction.get(ref);checks.push({m,ref,snap});}for(const {m,ref,snap} of checks){const version=snap.exists()?(snap.data().updatedAt?.toMillis()||0):null;const expected=versions.has(m.id)?versions.get(m.id):null;if(version!==expected)throw Error('Menu '+m.name+' sudah diubah admin lain. Muat ulang halaman untuk mengambil data terbaru.');transaction.set(ref,{...clean(m),updatedAt:serverTimestamp()});}});await loadMenu();status('Perubahan berhasil disimpan dan dikirim ke halaman menu.');$('#publish-note').textContent='Tersinkron melalui Firebase.';}catch(error){status(errorMessage(error),true);}finally{busy=false;$('#logout').disabled=false;render();}});
 window.addEventListener('beforeunload',e=>{if(dirty||busy){e.preventDefault();e.returnValue='';}});
