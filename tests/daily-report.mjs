@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-const {dayBounds,reportDate,summarizeDay,csvCell,dailyCsv}=await import('data:text/javascript;base64,'+fs.readFileSync(new URL('../daily-report.js',import.meta.url)).toString('base64'));
+const {dayBounds,monthBounds,reportDate,summarizeDay,summarizePaid,DAILY_LIST_LIMIT,csvCell,dailyCsv}=await import('data:text/javascript;base64,'+fs.readFileSync(new URL('../daily-report.js',import.meta.url)).toString('base64'));
 const stamp=iso=>({toDate:()=>new Date(iso)});
 const order=(id,total,paymentStatus='paid',status='completed',paymentMethod='cash',created='2026-11-01T10:00:00Z')=>({id,total,paymentStatus,status,paymentMethod,createdAt:stamp(created),customerName:'Pelanggan',service:'takeaway',table:'',note:'',adminNote:'',items:[{productId:'aren',name:'Aren',unitPrice:total,quantity:1,lineTotal:total,note:'Tanpa es'}]});
 assert.equal(dayBounds('2026-11-01').start.toISOString(),'2026-10-31T16:00:00.000Z');
@@ -13,3 +13,20 @@ const many=Array.from({length:251},(_,i)=>order(String(i),15000));assert.equal(s
 rows[0].status='cancelled';assert.equal(summarizeDay(rows,'2026-11-01').revenue,35000);rows[3].paymentStatus='paid';assert.equal(summarizeDay(rows,'2026-11-01').revenue,47000);
 for(const attack of ['=HYPERLINK("bad")',' +SUM(1)','@IMPORT','-1+2','\t=1','\r=2'])assert.ok(csvCell(attack).startsWith('"\''));assert.equal(csvCell('Pisang; "Keju"'),'"Pisang; ""Keju"""');
 const csv=dailyCsv(r);assert.ok(csv.startsWith('\ufeff'));assert.ok(csv.includes('RINCIAN TRANSAKSI'));assert.ok(csv.includes('RINCIAN ITEM'));assert.ok(csv.includes('Tanpa es'));assert.ok(csv.includes('"50000"'));console.log('Daily report checks passed: WITA boundaries, 251 orders, payment/cancellation totals, CSV escaping and item details.');
+
+for (const [day, start, end] of [
+  ['2026-06-09', '2026-05-31', '2026-06-30'],
+  ['2026-12-31', '2026-11-30', '2026-12-31'],
+  ['2028-02-29', '2028-01-31', '2028-02-29']
+]) {
+  const range = monthBounds(day);
+  assert.equal(range.start.toISOString(), start + 'T16:00:00.000Z');
+  assert.equal(range.end.toISOString(), end + 'T16:00:00.000Z');
+}
+assert.deepEqual(summarizePaid([
+  order('paid', 15000), order('cancelled', 10000, 'paid', 'cancelled'),
+  order('unpaid', 10000, 'unpaid', 'pending')
+]), {count:1, total:15000});
+assert.deepEqual(summarizePaid([]), {count:0, total:0});
+assert.equal(summarizeDay(many, '2026-11-01').rows.slice(-DAILY_LIST_LIMIT).length, 200);
+console.log('Monthly WITA boundaries, paid totals, and display cap verified.');

@@ -9,10 +9,29 @@ export function dayBounds(day){
   if(!Number.isFinite(start.getTime())||reportDate(start)!==day)throw Error('Tanggal laporan tidak valid.');
   return {start,end:new Date(start.getTime()+86400000)};
 }
+export const DAILY_LIST_LIMIT = 200;
+export const isPaidSale = order => order.paymentStatus === 'paid' && order.status !== 'cancelled';
+
+export function monthBounds(day) {
+  const monthStart = day.slice(0, 7) + '-01';
+  const {start} = dayBounds(monthStart);
+  const nextMonth = new Date(monthStart + 'T00:00:00Z');
+  nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
+  const end = dayBounds(nextMonth.toISOString().slice(0, 10)).start;
+  return {start, end};
+}
+
+export function summarizePaid(orders) {
+  return orders.filter(isPaidSale).reduce((summary, order) => ({
+    count: summary.count + 1,
+    total: summary.total + order.total
+  }), {count: 0, total: 0});
+}
+
 export function orderDate(value){return value?.toDate?value.toDate():value instanceof Date?value:new Date(value);}
 export function summarizeDay(orders,day){
   const {start,end}=dayBounds(day),rows=orders.filter(o=>{const t=orderDate(o.createdAt);return t>=start&&t<end;}).sort((a,b)=>orderDate(a.createdAt)-orderDate(b.createdAt));
-  const paid=rows.filter(o=>o.paymentStatus==='paid'&&o.status!=='cancelled'),unpaid=rows.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled'),cancelled=rows.filter(o=>o.status==='cancelled');
+  const paid=rows.filter(isPaidSale),unpaid=rows.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled'),cancelled=rows.filter(o=>o.status==='cancelled');
   const sum=list=>list.reduce((n,o)=>n+o.total,0),payments=['qr','transfer','cash'].map(method=>{const list=paid.filter(o=>o.paymentMethod===method);return {method,count:list.length,total:sum(list)};});
   const products=new Map();for(const order of paid)for(const item of order.items){const key=JSON.stringify([item.productId,item.name,item.unitPrice]);const product=products.get(key)||{name:item.name,unitPrice:item.unitPrice,quantity:0,total:0};product.quantity+=item.quantity;product.total+=item.lineTotal;products.set(key,product);}
   return {day,rows,paidCount:paid.length,revenue:sum(paid),unpaidCount:unpaid.length,unpaidTotal:sum(unpaid),cancelledCount:cancelled.length,cancelledTotal:sum(cancelled),cancelledPaid:sum(cancelled.filter(o=>o.paymentStatus==='paid')),payments,products:[...products.values()].sort((a,b)=>b.total-a.total)};
